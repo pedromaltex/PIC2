@@ -18,5 +18,6 @@ data = data[['Date', 'Close']]
 
 # Exibir os primeiros registros para conferir
 print(data)
+#
 
 
