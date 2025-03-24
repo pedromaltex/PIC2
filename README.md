@@ -5,6 +5,7 @@ My Graduation assignment
 
 This repository contains a Long Short-Term Memory (LSTM) neural network model for predicting the next day's closing price of the S&P 500 index using historical data.
 
+
 ## Overview
 
 The model is built using TensorFlow/Keras and leverages historical closing prices from the S&P 500 index to forecast future prices. It involves the following steps:

@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from sklearn.preprocessing import StandardScaler
 
+
 # Configurações
 ticker = "IBM"
 start_date = (datetime.today() - timedelta(days=365 * 5)).strftime('%Y-%m-%d')  # Últimos 5 anos

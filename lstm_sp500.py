@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import os
 
+
 # 1. Obter os dados históricos
 data = yf.download('^GSPC', start='2010-01-01', end='2025-01-01')
 close_prices = data['Close'].values.reshape(-1, 1)
