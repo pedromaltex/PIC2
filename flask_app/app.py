@@ -6,13 +6,13 @@ from flask_session import Session
 from flask import jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
-import yfinance
+import yfinance as yf
 import json
 
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
-from helpers import apology, login_required, lookup, usd, get_data, get_news
+from helpers import apology, login_required, lookup, usd, get_data, get_news, correlation
 
 # Configure application
 app = Flask(__name__)
@@ -101,7 +101,6 @@ def index():
     )
 
 
-
 @app.route("/predict", methods=["GET", "POST"])
 @login_required
 def predict():
@@ -119,7 +118,6 @@ def predict():
         return apology("You still have to do the integration with PIC")
         return render_template("predicted.html", stock=stock)
     return render_template("predict.html")
-
 
 
 @app.route("/buy", methods=["GET", "POST"])
@@ -152,7 +150,6 @@ def buy():
 
         # See current price of the selected stock
         current_price = float(stock["price"])
-        print(current_price)
 
         # see the total cash in wallet
         total_cash_wallet = db.execute(
@@ -193,6 +190,7 @@ def buy():
                 "INSERT INTO history (user_id, symbol, buysell, shares, price, time) VALUES (?, ?, 1, ?, ?, ?)",
                 session["user_id"], symbol, shares, current_price, current_time_formatted
             )
+
 
             # Redirect to home page
             return redirect("/")
@@ -309,8 +307,32 @@ def quote():
 
         # Redirect to quoted page
         session['via_button'] = True
+
+
+        price_volume = {}
+        stats = yf.Ticker(symbol)
+        price_volume["marketcap"] = stats.info.get("marketCap")
+        price_volume["pe_ratio"] = round(stats.info.get("trailingPE"), 4)
+        price_volume["eps"] = round(stats.info.get("epsCurrentYear"), 4)
+        price_volume["dividend_yield"] = round(stats.info.get("dividendYield") or 0, 4)
+        price_volume["dividend_rate"] = round(stats.info.get("dividendRate") or 0, 4)
+
+        results={}
+
+        # Função auxiliar para evitar erros caso o índice não exista
+        def get_financial_value(index_name):
+            return stats.financials.loc[index_name].iloc[0] if index_name in stats.financials.index else 0
+
+       # Obtendo valores diretamente do financials
+        results["revenue"] = get_financial_value("Total Revenue")
+        results["cost_of_revenue"] = - get_financial_value("Cost Of Revenue")
+        results["gross_profit"] = get_financial_value("Gross Profit")
+        results["earnings"] = get_financial_value("Net Income")
+        results["other_expenses"] = results["earnings"] - results["gross_profit"]
+
         return render_template("quoted.html", stock=stock, labels=labels, values=values, \
-                        selected_options=selected_options)
+                        selected_options=selected_options, correlation=correlation(symbol, "^GSPC", 5), \
+                        price_volume=price_volume, results=results)
 
     session['via_button'] = False
     return render_template("quote.html")
@@ -486,8 +508,6 @@ def news():
         
 
     return render_template("news.html")  # Exibe a página com o formulário
-
-
 
 
 if __name__ == "__main__":
