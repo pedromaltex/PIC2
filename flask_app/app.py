@@ -12,7 +12,7 @@ import json
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
-from helpers import apology, login_required, lookup, usd, get_data, get_news, correlation, get_interval
+from helpers import apology, login_required, lookup, usd, get_data, get_news, correlation, get_interval, get_data_percent, compare
 
 # Configure application
 app = Flask(__name__)
@@ -326,13 +326,15 @@ def quote():
 
 
         if request.form.get("symbol_compare"): #TODO# COLOCAR O COMPARE DOS HELPERS
+            new_stock_symbol = request.form.get("symbol_compare")
+            comparison = compare(session['symbol'], new_stock_symbol, '1wk') #TODO# colocar timeline certa
 
-            return render_template("quoted.html", stock=stock, labels=labels, values=values, \
-                        selected_options=selected_options, correlation=correlation(symbol, "^GSPC", 5), \
+            return render_template("quoted.html", stock=stock, new_stock_symbol=new_stock_symbol.upper(), labels=comparison['label1'], values=comparison['value1'], values2=comparison['value2'], \
+                        selected_options=selected_options, correlation=correlation(symbol, new_stock_symbol, 5), \
                         price_volume=price_volume, results=results)
 
 
-        return render_template("quoted.html", stock=stock, labels=labels, values=values, \
+        return render_template("quoted.html", stock=stock, new_stock_symbol=None, labels=labels, values=values, values2=None, \
                         selected_options=selected_options, correlation=correlation(symbol, "^GSPC", 5), \
                         price_volume=price_volume, results=results)
 

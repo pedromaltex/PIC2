@@ -14,6 +14,9 @@ from datetime import datetime, timezone
 
 from yahooquery import Screener
 
+# Defina sua chave API do Finnhub
+API_KEY = "cv3qp99r01ql2eusvo70cv3qp99r01ql2eusvo7g" 
+
 def apology(message, code=400):
     """Render message as an apology to user."""
 
@@ -38,7 +41,6 @@ def apology(message, code=400):
 
     return render_template("apology.html", top=code, bottom=escape(message)), code
 
-
 def login_required(f):
     """
     Decorate routes to require login.
@@ -53,7 +55,6 @@ def login_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
-
 
 def lookup(symbol):
     """Look up quote for symbol using yfinance."""
@@ -99,11 +100,9 @@ def lookup(symbol):
 
     return None
 
-
 def usd(value):
     """Format value as USD."""
     return f"${value:,.2f}"
-
 
 def get_data(symbol, period='1y', interval='1d'):
 
@@ -158,12 +157,6 @@ def get_data_percent(symbol, period='1y', interval='1d'):
     
     return labels, percent_changes
 
-
-
-
-# Defina sua chave API do Finnhub
-API_KEY = "cv3qp99r01ql2eusvo70cv3qp99r01ql2eusvo7g" 
-
 def get_news(symbol, max_news=100):
     """Obtém notícias financeiras para um símbolo específico usando Finnhub"""
     try:
@@ -194,7 +187,6 @@ def get_news(symbol, max_news=100):
     except Exception as e:
         print(f"[ERROR] Erro ao buscar notícias para {symbol}: {str(e)}")
         return []
-
 
 def correlation(target_ticker, market_ticker, years_ago): # Tem bug caso o ano atual seja bissexto e o há years_ago não seja
     # Baixar os dados históricos
@@ -259,4 +251,8 @@ def get_interval(period):
 def compare(stock1, stock2, period): #TODO#
     data1 = get_data_percent(stock1, period, get_interval(period))
     data2 = get_data_percent(stock2, period, get_interval(period))
+    return {"label1": data1[0],
+            "label2": data2[0],
+            "value1": data1[1],
+            "value2": data2[1]}
     
