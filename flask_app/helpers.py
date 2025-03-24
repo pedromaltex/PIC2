@@ -184,7 +184,7 @@ def get_news(symbol, max_news=100):
         return []
 
 
-def correlation(target_ticker, market_ticker, years_ago):
+def correlation(target_ticker, market_ticker, years_ago): # Tem bug caso o ano atual seja bissexto e o há years_ago não seja
     # Baixar os dados históricos
     day, month, year = datetime.now().day, datetime.now().month, datetime.now().year
     data = yf.download([target_ticker, market_ticker], start=f"{year-years_ago}-{month}-{day}", end=f"{year}-{month}-{day}")#["Adj Close"]
