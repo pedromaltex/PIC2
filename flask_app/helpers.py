@@ -146,6 +146,21 @@ def get_data(symbol, period='1y', interval='1d'):
                          1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo")
     return labels, values
 
+def get_data_percent(symbol, period='1y', interval='1d'):
+    labels, values = get_data(symbol, period, interval)  # Obtém os valores absolutos
+    
+    # Calcular a variação percentual
+    percent_changes = [0]  # O primeiro valor é sempre 0, pois não há variação anterior
+    
+    for i in range(1, len(values)):
+        percent_change = ((values[i] - values[i - 1]) / values[i - 1]) * 100
+        percent_changes.append(round(percent_change, 2))  # Arredondar para 2 casas decimais
+    
+    return labels, percent_changes
+
+
+
+
 # Defina sua chave API do Finnhub
 API_KEY = "cv3qp99r01ql2eusvo70cv3qp99r01ql2eusvo7g" 
 

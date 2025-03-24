@@ -324,6 +324,14 @@ def quote():
         results["earnings"] = get_financial_value("Net Income")
         results["other_expenses"] = results["earnings"] - results["gross_profit"]
 
+
+        if request.form.get("symbol_compare"): #TODO# COLOCAR O COMPARE DOS HELPERS
+
+            return render_template("quoted.html", stock=stock, labels=labels, values=values, \
+                        selected_options=selected_options, correlation=correlation(symbol, "^GSPC", 5), \
+                        price_volume=price_volume, results=results)
+
+
         return render_template("quoted.html", stock=stock, labels=labels, values=values, \
                         selected_options=selected_options, correlation=correlation(symbol, "^GSPC", 5), \
                         price_volume=price_volume, results=results)
