@@ -12,7 +12,7 @@ import json
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
-from helpers import apology, login_required, lookup, usd, get_data, get_news, correlation
+from helpers import apology, login_required, lookup, usd, get_data, get_news, correlation, get_interval
 
 # Configure application
 app = Flask(__name__)
@@ -284,31 +284,14 @@ def quote():
             stock = lookup(session['symbol'])
         symbol = stock['symbol']
 
-        print('*1'*1000)
-
-        selected_options = ['1y'] #Deixar predefinido o gráfico de 1 ano
-        period =   ['1d', '1wk', '1mo', 'YTD', '1y', '5y', '20y', '99y']
-        interval = ['1m', '1h',  '1h',  '1h',  '1d', '1wk','1mo', '3mo', '3mo']
-
         selected_options = request.form.getlist('selecao')
-        print(selected_options)
-        print('*2'*1000)
-
 
         if selected_options == []:
             selected_options = ['1y']
         
-
-        for i in range(len(period)):
-            if selected_options[0] == period[i]:
-                data = get_data(symbol, period[i], interval[i])
+        data = get_data(symbol, selected_options[0], get_interval(selected_options[0]))
         labels = data[0]
         values = data[1]
-        print(selected_options)
-
-        print('*3'*1000)
-
-        #print(data)
 
         # Store data in the session
         session['labels'] = labels

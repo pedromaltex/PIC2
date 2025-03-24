@@ -144,9 +144,6 @@ def get_data(symbol, period='1y', interval='1d'):
     else:
         raise ValueError("Meteste um valor errado no interval, estes são os válidos: \
                          1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo")
-
-
-
     return labels, values
 
 # Defina sua chave API do Finnhub
@@ -241,7 +238,7 @@ def get_interval(period):
     for i in range(len(grupos)):
         if period == grupos[i][0]:
             return grupos[i][1]
-        raise ValueError('Colocou valor errado em get_interval')
+    raise ValueError('Colocou valor errado em get_interval')
 
 # Comparar duas empresas em termos de alteração de percentagem num tempo específico.
 def compare(stock1, stock2, period): #TODO#
