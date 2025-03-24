@@ -257,6 +257,6 @@ def get_interval(period):
 
 # Comparar duas empresas em termos de alteração de percentagem num tempo específico.
 def compare(stock1, stock2, period): #TODO#
-    data1 = get_data(stock1, period, get_interval(period))
-    data2 = get_data(stock2, period, get_interval(period))
+    data1 = get_data_percent(stock1, period, get_interval(period))
+    data2 = get_data_percent(stock2, period, get_interval(period))
     
