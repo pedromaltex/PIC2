@@ -1,0 +1,26 @@
+FROM mistral
+
+PARAMETER temperature 0.2
+PARAMETER top_k 40
+QUANTIZATION 4bit
+
+
+
+
+
+#FROM llama3.2
+
+#ratingllm
+# Ajuste de parâmetros
+#PARAMETER temperature 0.2    
+# Reduz criatividade, respostas mais precisas
+#PARAMETER top_k 40           # Considera os 40 tokens mais prováveis
+#PARAMETER top_p 0.9          # Mantém diversidade moderada nas respostas
+#PARAMETER num_predict 256    # Limita a geração a 256 tokens
+#PARAMETER stop "###"         # Para a geração ao encontrar ###
+#PARAMETER context_size 4096  # Define a memória do modelo (máx. 4096)
+
+# set system message
+#SYSTEM """
+#Analyze the following news for its sentiment towards Company X. Provide only a single number between -1 and 1, where -1 is highly negative, 0 is neutral, and 1 is highly positive for Company X. No explanations, just the number.
+#"""
