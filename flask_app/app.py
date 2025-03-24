@@ -266,8 +266,6 @@ def logout():
 @login_required
 def quote():
     """Get stock quote."""
-    print('*0'*1000)
-
     if request.method == "POST":
         if not session['via_button']:
             if not request.form.get("symbol"):
@@ -282,6 +280,7 @@ def quote():
             stock = lookup(symbol)
         except UnboundLocalError:
             stock = lookup(session['symbol'])
+        
         symbol = stock['symbol']
 
         selected_options = request.form.getlist('selecao')
