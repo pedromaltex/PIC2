@@ -1,0 +1,11 @@
+id,name,age,department,salary,experience,gender,date,sales
+1,Alice,25,IT,55000,2,Female,2024-01-02,3503
+2,Bob,30,HR,60000,5,Male,2024-01-12,3465
+3,Charlie,35,Finance,75000,8,Male,2024-01-03,4029
+4,Diana,28,IT,72000,4,Female,2024-01-15,7492
+5,Edward,40,HR,58000,10,Male,2024-01-27,9482
+6,Fiona,26,Finance,80000,3,Female,2024-01-10,4720
+7,George,50,IT,90000,20,Male,2024-01-23,8271
+8,Hannah,29,Finance,67000,5,Female,2024-01-27,1945
+9,Ian,33,HR,62000,6,Male,2024-01-12,1842
+10,Julia,27,IT,53000,3,Female,2024-01-23,6342
