@@ -191,7 +191,13 @@ def get_news(symbol, max_news=100):
 def correlation(target_ticker, market_ticker, years_ago): # Tem bug caso o ano atual seja bissexto e o há years_ago não seja
     # Baixar os dados históricos
     day, month, year = datetime.now().day, datetime.now().month, datetime.now().year
-    data = yf.download([target_ticker, market_ticker], start=f"{year-years_ago}-{month}-{day}", end=f"{year}-{month}-{day}")#["Adj Close"]
+
+    # Baixar os dados históricos para os dois períodos
+    data1 = yf.download(target_ticker, start=f"{year-years_ago}-{month}-{day}", end=f"{year}-{month}-{day}")["Close"]
+    data2 = yf.download(market_ticker, start=f"{year-years_ago}-{month}-{day}", end=f"{year}-{month}-{day}")["Close"]
+
+    # Criar um DataFrame único com os dados
+    data = pd.concat([data1, data2], axis=1)
 
     # Calcular retornos diários
     returns = data.pct_change().dropna()

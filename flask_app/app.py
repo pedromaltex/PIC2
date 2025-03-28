@@ -329,6 +329,7 @@ def quote():
             new_stock_symbol = request.form.get("symbol_compare")
             comparison = compare(session['symbol'], new_stock_symbol, '1wk') #TODO# colocar timeline certa
 
+            #Aqui a correlation está sempre a 5 anos, corrigir
             return render_template("quoted.html", stock=stock, new_stock_symbol=new_stock_symbol.upper(), labels=comparison['label1'], values=comparison['value1'], values2=comparison['value2'], \
                         selected_options=selected_options, correlation=correlation(symbol, new_stock_symbol, 5), \
                         price_volume=price_volume, results=results)

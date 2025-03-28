@@ -4,13 +4,19 @@ from datetime import datetime, timezone
 
 # Empresa alvo
 target_ticker = "AAPL"
+# Índice de mercado
+market_ticker = "TSLA"
 
-# Índice de mercado (exemplos: ^GSPC = S&P 500, ^IXIC = Nasdaq, ^BVSP = IBOV)
-market_ticker = "^GSPC"
-
-# Baixar os dados históricos
 day, month, year = datetime.now().day, datetime.now().month, datetime.now().year
-data = yf.download([target_ticker, market_ticker], start=f"{year-1}-{month}-{day}", end=f"{year}-{month}-{day}")#["Adj Close"]
+start_date_1 = f"{year-1}-{month}-{day}"
+end_date = f"{year}-{month}-{day}"
+
+# Baixar os dados históricos para os dois períodos
+data1 = yf.download(target_ticker, start=start_date_1, end=end_date)["Close"]
+market_data = yf.download(market_ticker, start=start_date_1, end=end_date)["Close"]
+
+# Criar um DataFrame único com os dados
+data = pd.concat([data1, market_data], axis=1)
 
 # Calcular retornos diários
 returns = data.pct_change().dropna()
