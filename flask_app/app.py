@@ -272,15 +272,17 @@ def compare():
                 (request.form.get("sector1") and request.form.get("sector2"))):
             return apology("must provide symbol or sector", 400)
         
-        # In case of Compare Stocks clicked
+        # If Compare Stocks clicked
         if 'submit_stocks' in request.form:
-            print('stock')
-        # In case of Compare Stocks clicked
+            # Predefine years in case user don't put it
+            if not request.form.get("stocks_year1"):
+                year1 = 2016
+            if not request.form.get("stocks_year2"):
+                year2 = 2018
+
+        # If Compare Sectors clicked
         elif 'submit_sectors' in request.form:
             print('sector')
-        print('*'*50)
-        print(request.form)
-        print('*'*50)
 
 
         return render_template("compared.html")
