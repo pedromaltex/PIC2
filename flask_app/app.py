@@ -267,9 +267,10 @@ def logout():
 def compare():
     if request.method == "POST":
 
-        # Caso não seja possível usar nenhuma das comparações
-        if not (request.form.get("symbol1") and request.form.get("symbol2")):
-            return apology("must provide symbol", 400)
+        # In case the user don't put the enough information
+        if not ((request.form.get("symbol1") and request.form.get("symbol2")) or \
+                (request.form.get("sector1") and request.form.get("sector2"))):
+            return apology("must provide symbol or sector", 400)
 
 
         return render_template("compared.html")
