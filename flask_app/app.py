@@ -271,6 +271,16 @@ def compare():
         if not ((request.form.get("symbol1") and request.form.get("symbol2")) or \
                 (request.form.get("sector1") and request.form.get("sector2"))):
             return apology("must provide symbol or sector", 400)
+        
+        # In case of Compare Stocks clicked
+        if 'submit_stocks' in request.form:
+            print('stock')
+        # In case of Compare Stocks clicked
+        elif 'submit_sectors' in request.form:
+            print('sector')
+        print('*'*50)
+        print(request.form)
+        print('*'*50)
 
 
         return render_template("compared.html")
