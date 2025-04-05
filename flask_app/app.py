@@ -266,6 +266,12 @@ def logout():
 @login_required
 def compare():
     if request.method == "POST":
+
+        # Caso não seja possível usar nenhuma das comparações
+        if not (request.form.get("symbol1") and request.form.get("symbol2")):
+            return apology("must provide symbol", 400)
+
+
         return render_template("compared.html")
 
     return render_template("compare.html")
