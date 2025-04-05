@@ -262,6 +262,15 @@ def logout():
     return redirect("/")
 
 
+@app.route("/compare", methods=["GET", "POST"])
+@login_required
+def compare():
+    if request.method == "POST":
+        return render_template("compared.html")
+
+    return render_template("compare.html")
+
+
 @app.route("/quote", methods=["GET", "POST"])
 @login_required
 def quote():
