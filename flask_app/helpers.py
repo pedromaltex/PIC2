@@ -289,3 +289,91 @@ def calc_corr(dataset_returns):
     # Calcular a correlação
     correlation = dataset_returns.corr().iloc[0, 1]
     return correlation
+
+################## tentar implementar correlacao setores
+import seaborn as sns
+
+
+sector_mapping = {
+                    'Basic Materials': 'ms_basic_materials',
+                    'Communication Services': 'ms_communication_services',
+                    'Consumer Cyclical': 'ms_consumer_cyclical',
+                    'Consumer Defensive': 'ms_consumer_defensive',
+                    'Energy': 'ms_energy',
+                    'Financial Services': 'ms_financial_services',
+                    'Healthcare': 'ms_healthcare',
+                    'Industrials': 'ms_industrials',
+                    'Real Estate': 'ms_real_estate',
+                    'Technology': 'ms_technology',
+                    'Utilities': 'ms_utilities'
+                }
+            
+# Return list of tickers of each company
+def get_companiesbysector(sector):  # Obtém 100 maiores empresas do determinado setor
+    if sector not in list(sector_mapping.keys()):
+        raise ValueError(f"Setor inválido: {sector}. Escolha um dos seguintes: {list(sector_mapping.keys())}")
+
+    screener_id = sector_mapping[sector]
+    screener = Screener()
+    data = screener.get_screeners(screener_id, count=100)
+
+    # Verifica se os dados retornaram corretamente
+    if screener_id not in data or 'quotes' not in data[screener_id]:
+        raise ValueError(f"Não foi possível obter dados para o setor: {sector}")
+
+    # Extraindo os símbolos das empresas
+    sector_tickers = [stock['symbol'] for stock in data[screener_id]['quotes']]
+    return sector_tickers
+
+# Função mãe
+def heatmap(dataset1, dataset2):
+
+    # Preencher dados ausentes com o último valor disponível
+    dataset1 = dataset1.fillna(1)
+    dataset2 = dataset2.fillna(1)
+
+    # Calcular as percentagens diárias
+    returns1 = dataset1.pct_change().dropna()
+    returns2 = dataset2.pct_change().dropna()
+
+    correlation_by_company = {}
+    for company1 in returns1.columns:
+        correlation_by_company[f'{company1}'] = {}
+        for company2 in returns2.columns:
+            merged_df = pd.concat([returns1[company1], returns2[company2]], axis=1)
+            correlation_by_company[f'{company1}'][f'{company2}'] = merged_df[company1].corr(merged_df[company2])
+
+    # Converter o dicionário de correlações em um DataFrame
+    correlation_df = pd.DataFrame.from_dict(correlation_by_company, orient='index')
+
+    # Gerar o heatmap
+    plt.figure(figsize=(40, 40))
+    sns.heatmap(correlation_df, annot=False, cmap='coolwarm', center=0, linewidths=0.5, cbar=True)
+
+    # Personalizar o gráfico
+    plt.title(f'Correlação Anual: Empresas do Setor {list(sector_mapping.keys())[0]} vs. {list(sector_mapping.keys())[1]}') # ALTERAR ISTO NOS INDICES TODO
+    plt.xlabel('Ano')
+    plt.ylabel('Empresas')
+
+    #plt.savefig(f"{sector_mapping.keys()[i]}_{sector_mapping.keys()[j]}.png", dpi=300, bbox_inches='tight')
+
+    # Exibir o gráfico
+    plt.show()
+
+
+# Return the dataset of each ticker in a list
+def download_data(tickers, start, end):
+    return yf.download(tickers, start=start, end=end)['Close']
+
+
+
+
+'''
+for i in range(len(sector_mapping.keys())):
+    # Obtendo tickers dos setores desejados
+    dataset1 = datasetpro[i]
+    for j in range(len(sector_mapping.keys())):
+        if i != j:
+            dataset2 = datasetpro[j]
+            mae(dataset1, dataset2)
+'''

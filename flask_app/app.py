@@ -11,11 +11,13 @@ import pandas as pd
 import json
 import seaborn as sns
 import matplotlib.pyplot as plt
+from yahooquery import Screener
+
 
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
-from helpers import apology, login_required, lookup, usd, get_data, get_news, correlation, get_interval, get_data_percent, compare, dowl_data_return_dataset, calc_returns_daily, calc_corr
+from helpers import apology, login_required, lookup, usd, get_data, get_news, correlation, get_interval, get_data_percent, compare, dowl_data_return_dataset, calc_returns_daily, calc_corr, get_companiesbysector, heatmap, download_data
 
 # Configure application
 app = Flask(__name__)
@@ -291,6 +293,8 @@ def compare():
             
             # Empresa alvo
             ticker1 = request.form.get("symbol1")
+            
+
             # Índice de mercado
             ticker2 = request.form.get("symbol2")
 
@@ -312,18 +316,22 @@ def compare():
                 # Criar um DataFrame a partir do dicionário de correlações
                 correlation_df = pd.DataFrame(list(correlation_by_year.items()), columns=['Year', 'Correlation'])
                 correlation_df.set_index('Year', inplace=True)
-
+            
             # Gerar o heatmap
             plt.figure(figsize=(10, 4))
-            sns.heatmap(correlation_df.T, annot=True, cmap='coolwarm', center=0, fmt=".2f", linewidths=1, cbar=True)
+            sns.heatmap(correlation_df.T, annot=True, cmap='coolwarm', center=0, fmt=".2f", linewidths=0.1, cbar=True)
 
             # Personalizar o gráfico
-            plt.title(f'Correlação Anual de Retornos: {ticker1.upper} vs {ticker2.upper}')
+            plt.title(f'Correlação Anual de Retornos: {ticker1.upper()} vs {ticker2.upper()}')
             plt.xlabel('Ano')
             plt.ylabel('Correlação')
 
             # Exibir o gráfico
             plt.show()
+
+            return render_template("compared.html") # Colocar os dados do plot nesta página, e fazer plot em javascript e não em numpy
+
+
         # If Compare Sectors clicked
         elif 'submit_sectors' in request.form:
             # Predefine years in case user don't put it
@@ -337,6 +345,22 @@ def compare():
                 year1 = 2025
             if not year2 or not (year2 >= 0 and year2 <= datetime.today().year):
                 year2 = 2024
+            
+            # Baixar os dados históricos para as empresas dos setores indicados
+            day, month = datetime.now().day, datetime.now().month
+            start_date = f"{year1}-01-01"  # anos atrás
+            end_date = f"{year2}-01-01"
+
+            datasetpro = []
+            #for i in range(len(sector_mapping.keys())):
+            ticker_pro = get_companiesbysector(request.form.get('sector1'))
+            ticker_pro2 = get_companiesbysector(request.form.get('sector2'))
+
+            datasetpro.append(download_data(ticker_pro, start_date, end_date))
+            datasetpro.append(download_data(ticker_pro2, start_date, end_date))
+
+            heatmap(datasetpro[0], datasetpro[1])
+            
 
 
 
