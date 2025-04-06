@@ -360,7 +360,7 @@ def compare():
             datasetpro.append(download_data(ticker_pro2, start_date, end_date))
 
             heatmap(datasetpro[0], datasetpro[1])
-            
+            #
 
 
 
