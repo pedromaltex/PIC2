@@ -282,7 +282,23 @@ def compare():
 
         # If Compare Sectors clicked
         elif 'submit_sectors' in request.form:
+            try:
+                year1 = int(request.form.get("sectors_year1"))
+                year2 = int(request.form.get("sectors_year2"))
+            except:
+                return apology("must provide a valid set of years to analize each sector.", 400)
+            # Predefine years in case user don't put it
+            if not year1 or not (year1 >= 0 and year1 <= datetime.today().year-1):
+                year1 = 2025
+            if not year2 or not (year2 >= 0 and year2 <= datetime.today().year):
+                year2 = 2024
+
+            print('*'*50)
+            print(year1)
+            print(year2)
             print('sector')
+            print('*'*50)
+
 
 
         return render_template("compared.html")
