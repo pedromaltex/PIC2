@@ -325,7 +325,7 @@ def get_companiesbysector(sector):  # Obtém 100 maiores empresas do determinado
     sector_tickers = [stock['symbol'] for stock in data[screener_id]['quotes']]
     return sector_tickers
 
-# Função mãe
+# Função heatmap
 def heatmap(dataset1, dataset2):
 
     # Preencher dados ausentes com o último valor disponível

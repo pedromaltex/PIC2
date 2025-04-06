@@ -360,8 +360,8 @@ def compare():
             datasetpro.append(download_data(ticker_pro2, start_date, end_date))
 
             heatmap(datasetpro[0], datasetpro[1])
-            
-
+        
+            #TODO# Falta fazer gif para quando diferença de anos é superior a 1
 
 
         return render_template("compared.html")
