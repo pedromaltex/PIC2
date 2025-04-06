@@ -5,14 +5,17 @@ from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from flask import jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
-from datetime import datetime
+from datetime import datetime, timezone
 import yfinance as yf
+import pandas as pd
 import json
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
-from helpers import apology, login_required, lookup, usd, get_data, get_news, correlation, get_interval, get_data_percent, compare
+from helpers import apology, login_required, lookup, usd, get_data, get_news, correlation, get_interval, get_data_percent, compare, dowl_data_return_dataset, calc_returns_daily, calc_corr
 
 # Configure application
 app = Flask(__name__)
@@ -265,7 +268,7 @@ def logout():
 @app.route("/compare", methods=["GET", "POST"])
 @login_required
 def compare():
-    if request.method == "POST":
+    if request.method == "POST": #TODO# Corrigir o facto de aceitar qualquer input nos símbolos de stock
 
         # In case the user don't put the enough information
         if not ((request.form.get("symbol1") and request.form.get("symbol2")) or \
@@ -275,13 +278,55 @@ def compare():
         # If Compare Stocks clicked
         if 'submit_stocks' in request.form:
             # Predefine years in case user don't put it
-            if not request.form.get("stocks_year1"):
-                year1 = 2016
-            if not request.form.get("stocks_year2"):
-                year2 = 2018
+            try:
+                year1 = int(request.form.get("stocks_year1"))
+                year2 = int(request.form.get("stocks_year2"))
+            except:
+                return apology("must provide a valid set of years to analize each sector.", 400)
+            # Predefine years in case user don't put it
+            if not year1 or not (year1 >= 0 and year1 <= datetime.today().year-1):
+                year1 = datetime.today().year - 60
+            if not year2 or not (year2 >= 0 and year2 <= datetime.today().year):
+                year2 = datetime.today().year
+            
+            # Empresa alvo
+            ticker1 = request.form.get("symbol1")
+            # Índice de mercado
+            ticker2 = request.form.get("symbol2")
 
+            day, month, year = datetime.now().day, datetime.now().month, year1
+            start_date_1 = f"{year1}-{month}-{day}"
+            end_date = f"{year2}-{month}-{day}"
+
+            dataset = dowl_data_return_dataset(ticker1, ticker2, start_date_1, end_date)
+            dataset.fillna(1)
+
+            percentagens_dataset = calc_returns_daily(dataset)
+
+            correlation_by_year = {}
+            for years_ago in range(year2-year1+1):
+                new_data = percentagens_dataset[percentagens_dataset.index.year == year2-years_ago]
+                corr = calc_corr(new_data)
+                correlation_by_year[f'{year2-years_ago}'] = corr
+
+                # Criar um DataFrame a partir do dicionário de correlações
+                correlation_df = pd.DataFrame(list(correlation_by_year.items()), columns=['Year', 'Correlation'])
+                correlation_df.set_index('Year', inplace=True)
+
+            # Gerar o heatmap
+            plt.figure(figsize=(10, 4))
+            sns.heatmap(correlation_df.T, annot=True, cmap='coolwarm', center=0, fmt=".2f", linewidths=1, cbar=True)
+
+            # Personalizar o gráfico
+            plt.title(f'Correlação Anual de Retornos: {ticker1.upper} vs {ticker2.upper}')
+            plt.xlabel('Ano')
+            plt.ylabel('Correlação')
+
+            # Exibir o gráfico
+            plt.show()
         # If Compare Sectors clicked
         elif 'submit_sectors' in request.form:
+            # Predefine years in case user don't put it
             try:
                 year1 = int(request.form.get("sectors_year1"))
                 year2 = int(request.form.get("sectors_year2"))
@@ -292,12 +337,6 @@ def compare():
                 year1 = 2025
             if not year2 or not (year2 >= 0 and year2 <= datetime.today().year):
                 year2 = 2024
-
-            print('*'*50)
-            print(year1)
-            print(year2)
-            print('sector')
-            print('*'*50)
 
 
 
