@@ -6,7 +6,7 @@ import numpy as np
 
 # %%
 # Função para obter os dados históricos do S&P 500
-def get_data(symbol, period='40y', interval='1d'):
+def get_data(symbol, period='100y', interval='1d'):
     data = yf.download(tickers=symbol, period=period, interval=interval)
     data = data[['Close']].reset_index()
     return data
@@ -18,15 +18,11 @@ sp500_data
 
 # %%
 # Criar um vetor de anos com base no número de dados
-years = np.arange(len(sp500_data))
-years
+unit_of_time = np.arange(len(sp500_data))
+unit_of_time
 # %%
 # Taxa de crescimento anual de 10%
 growth_rate = 0.10
-
-
-# %% 
-sp500_data['Close'].iloc[0].item()
 
 # %%
 log_sp500 = np.log(sp500_data['Close'])
@@ -34,23 +30,22 @@ log_sp500
 
 # %%
 # Descobrir a de y = ax + b
+b = log_sp500.iloc[0].item()
 a = (log_sp500.iloc[-1].item() - log_sp500.iloc[0].item()) / len(log_sp500)
 a
+
 # %%
 linear_median_curve = np.arange(len(sp500_data))
-linear_median_curve = a * linear_median_curve + log_sp500.iloc[0].item()
+linear_median_curve = a * linear_median_curve + b
 
 # %% 
 # Calcular a curva de crescimento com base na fórmula P0 * (1 + r)^t
-exp_curve = sp500_data['Close'].iloc[0].item() * (1 + growth_rate) ** (years/252)  # 252 é o número aproximado de dias úteis por ano
+exp_curve = sp500_data['Close'].iloc[0].item() * (1 + a*1000000) ** (unit_of_time/unit_of_time[-1])  # 252 é o número aproximado de dias úteis por ano
 exp_curve
 
 # %%
 # Plotando os gráficos
 plt.figure(figsize=(12, 6))
-#plt.plot(sp500_data['Date'], sp500_data['Close'], label='S&P 500', color='blue')
-#plt.plot(sp500_data['Date'], exp_curve, label='Crescimento Exponencial', linestyle='dashed', color='red')
-
 plt.plot(sp500_data['Date'], linear_median_curve, label='Crescimento Exponencial', linestyle='dashed', color='red')
 plt.plot(sp500_data['Date'], log_sp500, label='Crescimento Exponencial', linestyle='dashed', color='red')
 # Melhorando visualmente
@@ -61,12 +56,11 @@ plt.title('Comparação entre o S&P 500 e uma curva exponencial')
 plt.legend()
 plt.grid()
 plt.show()
-# %%
+
 # Plotando os gráficos
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], sp500_data['Close'], label='S&P 500', color='blue')
 plt.plot(sp500_data['Date'], exp_curve, label='Crescimento Exponencial', linestyle='dashed', color='red')
-
 # Melhorando visualmente
 plt.xticks(rotation=45)
 plt.xlabel('Ano')
