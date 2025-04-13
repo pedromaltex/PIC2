@@ -69,7 +69,7 @@ y_pred2 = np.polyval(coef, x)
 
 
 # %%
-'''
+## PORQUE ESTÁ ERRADO?????
 # Compute slope (B1)
 B1 = np.sum((x - x_mean) * (y - y_mean)) / np.sum((x - x_mean) ** 2)
 
@@ -83,7 +83,7 @@ print(f"Intercept (B0): {B0}")
 # Predicting values
 y_pred = B0 + B1 * x
 print("Predicted values:", y_pred)
-'''
+
 # %%
 # Plotando os gráficos
 plt.figure(figsize=(12, 6))
@@ -98,68 +98,4 @@ plt.title('Comparação entre o S&P 500 e uma curva exponencial')
 plt.legend()
 plt.grid()
 plt.show()
-# %%
-
-####################################
-# Objetivo: Regressão linear SP500 #
-####################################
-
-# %%
-# sp500_data
-# Obter dados históricos do S&P 500
-sp500_data = get_data(period='120y', interval='1mo')
-sp500_data
-
-
-# %%
-# unit_of_time
-# Criar um vetor de anos com base no número de dados
-unit_of_time = np.arange(len(sp500_data))
-unit_of_time
-
-
-# %%
-# log_sp500
-# Criar log do sp500
-log_sp500 = np.log(sp500_data['Close'])
-log_sp500
-
-
-# %%
-# Regressão linear simples
-# Sample data
-x = unit_of_time
-y = log_sp500
-
-# %%
-# x,y
-# Garantir que ambos são arrays numpy para evitar erros de broadcasting
-x = np.array(x)
-y = np.array(y)
-
-x,y
-# %%
-# x_mean,y_mean
-# Compute means
-x_mean = np.mean(x)
-y_mean = np.mean(y)
-
-x_mean,y_mean
-
-# %%
-# Compute slope (B1)
-B1 = np.sum((x - x_mean) * (y - y_mean)) / np.sum((x - x_mean) * (x - x_mean))
-
-# Compute intercept (B0)
-B0 = y_mean - B1 * x_mean
-
-print(f"Slope (B1): {B1}")
-print(f"Intercept (B0): {B0}")
-
-# %%
-# Predicting values
-y_pred = B0 + B1 * x
-print("Predicted values:", y_pred)
-
-# %%
 
