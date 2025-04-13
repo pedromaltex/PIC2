@@ -16,7 +16,7 @@ import numpy as np
 
 # %%
 # Função para obter os dados históricos do S&P 500
-def get_data(symbol='^GSPC', period='80y', interval='1d'):
+def get_data(symbol='^GSPC', period='200y', interval='1mo'):
     data = yf.download(tickers=symbol, period=period, interval=interval)
     data = data[['Close']].reset_index()
     return data
@@ -98,13 +98,13 @@ print("Predicted values:", y_pred)
 # %%
 # Plotando os gráficos
 plt.figure(figsize=(12, 6))
-plt.plot(sp500_data['Date'], y_pred_log, label='Crescimento Exponencial', linestyle='dashed', color='red')
-plt.plot(sp500_data['Date'], log_sp500, label='Crescimento Exponencial', linestyle='dashed', color='red')
+plt.plot(sp500_data['Date'], y_pred_log, label='Exponential Growth', linestyle='dashdot', color='red')
+plt.plot(sp500_data['Date'], log_sp500, label='S&P500', linestyle='solid', color='black')
 # Melhorando visualmente
 plt.xticks(rotation=45)
-plt.xlabel('Ano')
-plt.ylabel('Valor')
-plt.title('Comparação entre o S&P 500 e uma curva exponencial')
+plt.xlabel('Year')
+plt.ylabel('Value')
+plt.title('Exponential vs S&P500 (Log Scale)')
 plt.legend()
 plt.grid()
 plt.show()
@@ -112,18 +112,25 @@ plt.show()
 # %%
 # Plotando os gráficos
 plt.figure(figsize=(12, 6))
-plt.plot(sp500_data['Date'], y_pred, label='Crescimento Exponencial', linestyle='dashed', color='red')
-plt.plot(sp500_data['Date'], y, label='Crescimento Exponencial', linestyle='dashed', color='red')
+plt.plot(sp500_data['Date'], y_pred, label='Exponential Growth', linestyle='dashdot', color='red')
+plt.plot(sp500_data['Date'], y, label='S&P500', linestyle='solid', color='black')
 # Melhorando visualmente
 plt.xticks(rotation=45)
-plt.xlabel('Ano')
-plt.ylabel('Valor')
-plt.title('Comparação entre o S&P 500 e uma curva exponencial')
+plt.xlabel('Year')
+plt.ylabel('Value')
+plt.title('Exponential vs S&P500')
 plt.legend()
 plt.grid()
 plt.show()
 
 
 # %%
-percent = 1
+# Calcular rendimento médio do sp500, apenas funciona com períodos em meses
+y1 = y_pred[-11]
+y2 = y_pred[-23]
+percent = 100 * (y1 - y2) / y2
+print(f"Preço teste: {y1}")
+print(f"Preço teste 12 meses atrás: {y2}")
+
 print(f"Rendimento médio do sp500: {percent}%")
+# %%
