@@ -16,7 +16,7 @@ import numpy as np
 
 # %%
 # Função para obter os dados históricos do S&P 500
-def get_data(symbol='^GSPC', period='200y', interval='1mo'):
+def get_data(symbol='^GSPC', period='80y', interval='1mo'):
     data = yf.download(tickers=symbol, period=period, interval=interval)
     data = data[['Close']].reset_index()
     return data
@@ -24,7 +24,11 @@ def get_data(symbol='^GSPC', period='200y', interval='1mo'):
 # %%
 # sp500_data
 # Obter dados históricos do S&P 500
-sp500_data = get_data()
+name, periodo, intervalo = '^GSPC', '80y', '1mo'
+sp500_data = get_data(name, periodo, intervalo)
+
+name = yf.Ticker(name).info['longName']
+name
 #sp500_data
 
 
@@ -48,6 +52,8 @@ log_sp500 = np.log(sp500_data['Close'])
 x = unit_of_time
 y_log = log_sp500
 y = np.array(sp500_data['Close'])
+y = y.flatten()
+y
 
 # %%
 # x,y
@@ -66,16 +72,19 @@ y_mean_log = np.mean(y_log)
 
 #x_mean,y_mean_log
 
-
 # %%
 # Example of NumPy's polyfit
 coef_log = np.polyfit(x, y_log, 1)
 y_pred_log = np.polyval(coef_log, x)
 
 y_pred = np.exp(y_pred_log)
-#y_pred
+y_pred
 
+# %%
+# SP500 - exponential 
 
+diference = 100* (y - y_pred)/y_pred
+diference
 # %%
 '''
 ## PORQUE ESTÁ ERRADO?????
@@ -99,12 +108,12 @@ print("Predicted values:", y_pred)
 # Plotando os gráficos
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], y_pred_log, label='Exponential Growth', linestyle='dashdot', color='red')
-plt.plot(sp500_data['Date'], log_sp500, label='S&P500', linestyle='solid', color='black')
+plt.plot(sp500_data['Date'], log_sp500, label=f'{name}', linestyle='solid', color='black')
 # Melhorando visualmente
 plt.xticks(rotation=45)
 plt.xlabel('Year')
 plt.ylabel('Value')
-plt.title('Exponential vs S&P500 (Log Scale)')
+plt.title(f'Exponential vs {name} (Log Scale)')
 plt.legend()
 plt.grid()
 plt.show()
@@ -113,12 +122,26 @@ plt.show()
 # Plotando os gráficos
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], y_pred, label='Exponential Growth', linestyle='dashdot', color='red')
-plt.plot(sp500_data['Date'], y, label='S&P500', linestyle='solid', color='black')
+plt.plot(sp500_data['Date'], y, label=f'{name}', linestyle='solid', color='black')
 # Melhorando visualmente
 plt.xticks(rotation=45)
 plt.xlabel('Year')
 plt.ylabel('Value')
-plt.title('Exponential vs S&P500')
+plt.title(f'Exponential vs {name}')
+plt.legend()
+plt.grid()
+plt.show()
+
+# %%
+# Plot SP500 - exponential 
+# Plotando os gráficos
+plt.figure(figsize=(12, 6))
+plt.plot(sp500_data['Date'], diference, label=f'{name}', linestyle='solid', color='black')
+# Melhorando visualmente
+plt.xticks(rotation=45)
+plt.xlabel('Year')
+plt.ylabel('Value')
+plt.title(f'Exponential vs {name}')
 plt.legend()
 plt.grid()
 plt.show()
@@ -132,5 +155,5 @@ percent = 100 * (y1 - y2) / y2
 print(f"Preço teste: {y1}")
 print(f"Preço teste 12 meses atrás: {y2}")
 
-print(f"Rendimento médio do sp500: {percent}%")
+print(f"Rendimento médio do {name}: {percent}%")
 # %%
