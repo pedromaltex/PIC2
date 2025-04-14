@@ -24,12 +24,11 @@ def get_data(symbol='^GSPC', period='80y', interval='1mo'):
 # %%
 # sp500_data
 # Obter dados históricos do S&P 500
-name, periodo, intervalo = '^GSPC', '80y', '1mo'
+name, periodo, intervalo = '^GSPC', '150y', '1mo'
 sp500_data = get_data(name, periodo, intervalo)
-
 name = yf.Ticker(name).info['longName']
-name
-#sp500_data
+
+sp500_data
 
 
 # %%
@@ -76,7 +75,7 @@ y_mean_log = np.mean(y_log)
 # Example of NumPy's polyfit
 coef_log = np.polyfit(x, y_log, 1)
 y_pred_log = np.polyval(coef_log, x)
-
+coef_log = coef_log.flatten()
 y_pred = np.exp(y_pred_log)
 y_pred
 
@@ -103,48 +102,59 @@ print(f"Intercept (B0): {B0}")
 y_pred = B0 + B1 * x
 print("Predicted values:", y_pred)
 '''
-
+#%%
+# Função que facilita o plot 
+def improve_draw():
+    # Melhorando visualmente
+    plt.xticks(rotation=45)
+    plt.xlabel('Year')
+    plt.ylabel('Value')
+    plt.legend()
+    plt.grid()
+    plt.show()
 # %%
 # Plotando os gráficos
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], y_pred_log, label='Exponential Growth', linestyle='dashdot', color='red')
 plt.plot(sp500_data['Date'], log_sp500, label=f'{name}', linestyle='solid', color='black')
-# Melhorando visualmente
-plt.xticks(rotation=45)
-plt.xlabel('Year')
-plt.ylabel('Value')
 plt.title(f'Exponential vs {name} (Log Scale)')
-plt.legend()
-plt.grid()
-plt.show()
+x_pos = sp500_data['Date'].iloc[-10]
+y_pos = min(y_pred_log) * 1.05  # um pouco abaixo do topo
+plt.text(x_pos, y_pos, rf'$y ={{{coef_log[1]:.4f} + {coef_log[0]:.4f} \cdot x}}$ (Exponential Growth)',
+         fontsize=13,
+         ha='right', va='bottom',
+         color='red',
+         bbox=dict(facecolor='white', alpha=0.6))
+
+improve_draw()
 
 # %%
 # Plotando os gráficos
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], y_pred, label='Exponential Growth', linestyle='dashdot', color='red')
 plt.plot(sp500_data['Date'], y, label=f'{name}', linestyle='solid', color='black')
-# Melhorando visualmente
-plt.xticks(rotation=45)
-plt.xlabel('Year')
-plt.ylabel('Value')
 plt.title(f'Exponential vs {name}')
-plt.legend()
-plt.grid()
-plt.show()
+
+x_pos = sp500_data['Date'].iloc[-10]
+y_pos = min(y) * 1.05  # um pouco abaixo do topo
+plt.text(x_pos,y_pos , rf'$y = e^{{{coef_log[1]:.4f} + {coef_log[0]:.4f} \cdot x}}$ (Exponential Growth)',
+         fontsize=13,
+         ha='right', va='bottom',
+         color='red',
+         bbox=dict(facecolor='white', alpha=0.6))
+
+improve_draw()
+
 
 # %%
 # Plot SP500 - exponential 
 # Plotando os gráficos
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], diference, label=f'{name}', linestyle='solid', color='black')
-# Melhorando visualmente
-plt.xticks(rotation=45)
-plt.xlabel('Year')
-plt.ylabel('Value')
-plt.title(f'Exponential vs {name}')
-plt.legend()
-plt.grid()
-plt.show()
+plt.title(f'Exponential vs {name} (Diference)')
+
+improve_draw()
+
 
 
 # %%
@@ -156,4 +166,13 @@ print(f"Preço teste: {y1}")
 print(f"Preço teste 12 meses atrás: {y2}")
 
 print(f"Rendimento médio do {name}: {percent}%")
+# %%
+# A inclinação B1 representa o crescimento logarítmico por "unidade de tempo"
+# Como estás a usar intervalos mensais:
+growth_rate = np.exp(coef_log[0]) - 1
+cagr = (1 + growth_rate)**12 - 1  # anualizado
+
+print(f"Crescimento médio mensal: {growth_rate * 100:.2f}%")
+print(f"Crescimento médio anual (CAGR): {cagr * 100:.2f}%")
+
 # %%
