@@ -24,7 +24,7 @@ def get_data(symbol='^GSPC', period='80y', interval='1mo'):
 # %%
 # sp500_data
 # Obter dados históricos do S&P 500
-name, periodo, intervalo = '^GSPC', '5y', '1mo'
+name, periodo, intervalo = '^GSPC', '40y', '1d'
 sp500_data = get_data(name, periodo, intervalo)
 name = yf.Ticker(name).info['longName']
 
@@ -193,8 +193,6 @@ for i in range(len(stocks_owned)-1):
 porfolio = stocks_owned * sp500_price # Calcular evolução portfolio
 
 # %%
-
-# %%
 # Método de weighted buy
 allocation = (monthly_investment * (1 - 2.5 * diference/100)) # dinheiro investido mês a mês
 total_allocation = np.zeros(len(allocation))
@@ -234,6 +232,26 @@ plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], total_invest, label='Standart Investment (Allocation)', linestyle='solid', color='red')
 plt.plot(sp500_data['Date'], total_allocation, label="Maltez's way (Allocation)", linestyle='dotted', color='blue')
 plt.title("Allocation")
+improve_draw()
+
+# %%
+# Ver se a função Diference tem média 0 num espaço grande de tempo
+np.mean(diference) 
+# %%
+plt.figure(figsize=(12, 6))
+
+# Dividir a linha em duas: positiva e negativa
+positive_dates = sp500_data['Date'][diference >= 0]
+positive_values = diference[diference >= 0]
+
+negative_dates = sp500_data['Date'][diference < 0]
+negative_values = diference[diference < 0]
+
+# Desenhar linhas com cores diferentes
+plt.plot(positive_dates, positive_values, color='red', label='Positive')
+plt.plot(negative_dates, negative_values, color='green', label='Negative')
+
+plt.title(f'Exponential vs {name} (Diference)')
 improve_draw()
 
 # %%
