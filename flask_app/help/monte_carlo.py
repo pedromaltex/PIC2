@@ -16,7 +16,7 @@ def get_data(symbol='^GSPC', period='80y', interval='1mo'):
 
 # sp500_data
 # Obter dados históricos do S&P 500
-name, periodo, intervalo = '^GSPC', '40y', '1d'
+name, periodo, intervalo = '^GSPC', '40y', '1mo'
 sp500_data = get_data(name, periodo, intervalo)
 name = yf.Ticker(name).info['longName']
 
@@ -218,22 +218,23 @@ improve_draw()
 
 # %%
 # Vamos fazer com dados até 2023 estudar 
-sp500_data_since2024 = sp500_data[(sp500_data['Date'] <= '2025-12-31') & (sp500_data['Date'] >= '2024-01-01')]
-days_year = len(sp500_data_since2024)
-
-sp500_data_since2024['Close'].values[0][0]
+sp500_data_since2017 = sp500_data[(sp500_data['Date'] <= '2025-12-31') & (sp500_data['Date'] >= '2017-01-01')]
+days_year = len(sp500_data_since2017)
+sp500_data_since2017['Close'].values[0][0]
 
 # %%
 # Obter as datas reais
-datas = sp500_data_since2024['Date'].reset_index(drop=True)
+datas = sp500_data_since2017['Date'].reset_index(drop=True)
 dias = len(datas)
 
+# %%
 # Parâmetros
-preco_inicial = sp500_data_since2024['Close'].values[0]  # <-- Sem o [0][0], só [0]
-mu = 0.0749
+preco_inicial = sp500_data_since2017['Close'].values[0]
+mu = 0.749 # Ver o porque de ser este o valor, não deveria ser 0.0749???
 sigma = 0.2
 simulacoes = 200
 
+# %%
 # Matriz de preços
 precos = np.zeros((dias, simulacoes))
 precos[0] = preco_inicial
@@ -248,13 +249,29 @@ for s in range(simulacoes):
 
 # Converter em DataFrame com índice de datas
 precos_df = pd.DataFrame(precos, index=datas)
+precos_df
+# %%
+##########################
+# CHATGPT
+# Colocar y_pred em 2024 até 2025
+# Garante que a coluna 'Date' é datetime
+sp500_data['Date'] = pd.to_datetime(sp500_data['Date'])
 
+# Filtra os dados com date > 01/01/2024
+mask = sp500_data['Date'] > pd.Timestamp('2016-12-31')
+dates_filtered = sp500_data.loc[mask, 'Date']
+y_pred_filtered = y_pred[mask.values]  # y_pred deve ter mesmo comprimento que sp500_data
+
+############################
 # Plot com datas reais no eixo X
 plt.figure(figsize=(12, 6))
 plt.plot(precos_df, alpha=0.3)
+plt.plot(dates_filtered, y_pred_filtered, label='Exponential Growth', linestyle='dashdot', color='red')
 plt.title("Simulação de Monte Carlo - Movimento Browniano Geométrico (com datas)")
 plt.xlabel("Data")
 plt.ylabel("Preço simulado")
 plt.grid(True)
 plt.tight_layout()
 plt.show()
+
+# %%
