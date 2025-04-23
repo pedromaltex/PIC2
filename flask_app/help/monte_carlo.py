@@ -230,7 +230,7 @@ dias = len(datas)
 # %%
 # Parâmetros
 preco_inicial = sp500_data_since2017['Close'].values[0]
-mu = 0.749 # Ver o porque de ser este o valor, não deveria ser 0.0749???
+mu = 0.8 # Ver o porque de ser este o valor, não deveria ser 0.0749???
 sigma = 0.2
 simulacoes = 200
 
@@ -265,8 +265,8 @@ y_pred_filtered = y_pred[mask.values]  # y_pred deve ter mesmo comprimento que s
 ############################
 # Plot com datas reais no eixo X
 plt.figure(figsize=(12, 6))
-plt.plot(precos_df, alpha=0.3)
-plt.plot(dates_filtered, y_pred_filtered, label='Exponential Growth', linestyle='dashdot', color='red')
+plt.plot(precos_df, alpha=0.6)
+plt.plot(dates_filtered, y_pred_filtered, label='Exponential Growth', linestyle='dashdot', color='black')
 plt.title("Simulação de Monte Carlo - Movimento Browniano Geométrico (com datas)")
 plt.xlabel("Data")
 plt.ylabel("Preço simulado")
@@ -288,15 +288,30 @@ for i in range(1, len(total_invest)):
 total_invest
 
 # %%
+precos_df
+# %%
 sp500_price_monte = precos_df / 10
+sp500_price_monte
+# %%
+######################## Chat GPT
+# Inicializar o array para guardar a evolução de ações compradas por simulação
+stocks_owned_matrix = np.zeros_like(sp500_price_monte)
 
-for simul in sp500_price_monte:
-    stocks_owned = monthly_investment / sp500_price_monte # Quantas ações consigo comprar com 500 euros
-    for i in range(len(stocks_owned)-1):
-        stocks_owned[i+1] += stocks_owned[i] # Tornar a função acumulativa
-
-
-porfolio = stocks_owned * sp500_price_monte # Calcular evolução portfolio
+# Iterar por cada simulação (coluna)
+for i in range(sp500_price_monte.shape[1]):
+    prices = sp500_price_monte.iloc[:, i].values  # preços da simulação i
+    stocks = np.zeros_like(prices)
+    stocks[0] = monthly_investment / prices[0]
+    
+    for t in range(1, len(prices)):
+        stocks[t] = stocks[t-1] + (monthly_investment / prices[t])
+    
+    stocks_owned_matrix[:, i] = stocks  # guardar resultado
+#######################
+# %%
+pd.DataFrame(stocks_owned_matrix)
+# %%
+porfolio = stocks_owned_matrix * sp500_price_monte # Calcular evolução portfolio
 pd.DataFrame(porfolio)
 
 #####################################################################################
