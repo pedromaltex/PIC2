@@ -341,17 +341,32 @@ pd.DataFrame(allocation)
 pd.DataFrame(total_allocation) 
 
 # %%
-sp500_price
+sp500_price_monte
 # %%
-stocks_owned2 = allocation / sp500_price
-#stocks_owned2
-
-for i in range(len(stocks_owned2)-1):
-    stocks_owned2[i+1] += stocks_owned2[i]
-#stocks_owned2
-porfolio2 = stocks_owned2 * sp500_price
+stocks_owned2 = allocation / sp500_price_monte
+stocks_owned2
+# %%
+stocks_owned2 = np.cumsum(stocks_owned2, axis=0)
+stocks_owned2
+# %%
+porfolio2 = stocks_owned2 * sp500_price_monte
 porfolio2
+# %%
 
+# Supondo que 'porfolio2' é o teu DataFrame com datas como índice e simulações nas colunas
+final_values2 = porfolio2.iloc[-1]  # pega os valores da última data
+final_values = porfolio.iloc[-1]
+plt.figure(figsize=(10, 6))
+plt.hist(final_values2, bins=30, edgecolor='black', color='skyblue')
+plt.hist(final_values2, bins=30, edgecolor='black', color='red')
+plt.title('Distribuição dos Valores Finais do Portfólio')
+plt.xlabel('Valor Final do Portfólio (€)')
+plt.ylabel('Frequência')
+plt.grid(True)
+plt.show()
+
+
+# %%
 print(f"Totalidade de dinheiro alocado em Standart Investment: {total_invest[-1]}.")
 print(f"Totalidade de carteira de investimento em Standart Investment: {porfolio[-1]}.")
 
