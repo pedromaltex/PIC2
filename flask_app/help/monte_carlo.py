@@ -324,21 +324,25 @@ precos_df
 # %%
 #diference = (precos_df - y_pred_filtered) / y_pred_filtered, 
 # mas temos de por y_pred do mesmo tamanho do dataset
-diference = (precos_df - y_pred_filtered[:, np.newaxis]) / y_pred_filtered[:, np.newaxis]
+diference = 100 * (precos_df - y_pred_filtered[:, np.newaxis]) / y_pred_filtered[:, np.newaxis] # Em percentagem
 diference
 # %%
 # Método de weighted buy
-allocation = (monthly_investment * (1 - 2.5 * diference/100)) # dinheiro investido mês a mês
-total_allocation = np.zeros(len(allocation))
-for i in range(len(allocation)):
-    if allocation[i] < 0:
-        allocation[i] = 0 # Não retirar dinheiro para não pagar impostos
-    total_allocation[i] = sum(allocation[:i+1])
+allocation = (monthly_investment * (1 - 2.5 * diference/100)) # dinheiro investido mês a 
+allocation
+# %%
+#total_allocation = np.zeros_like(allocation)
 
-total_allocation 
+allocation = np.where(allocation < 0, 0, allocation)
+total_allocation = np.cumsum(allocation, axis=0)
+# %%
+pd.DataFrame(allocation)
+# %%
+pd.DataFrame(total_allocation) 
 
-#allocation
-
+# %%
+sp500_price
+# %%
 stocks_owned2 = allocation / sp500_price
 #stocks_owned2
 
