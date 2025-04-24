@@ -314,9 +314,6 @@ pd.DataFrame(stocks_owned_matrix)
 porfolio = stocks_owned_matrix * sp500_price_monte # Calcular evolução portfolio
 pd.DataFrame(porfolio)
 
-#####################################################################################
-#Fazer a partir daqui
-# %%
 # %%
 len(y_pred_filtered)
 # %%
@@ -355,32 +352,26 @@ porfolio2
 
 # Supondo que 'porfolio2' é o teu DataFrame com datas como índice e simulações nas colunas
 final_values2 = porfolio2.iloc[-1]  # pega os valores da última data
-final_values = porfolio.iloc[-1]
+final_values1 = porfolio.iloc[-1]
+# %%
+final_values1
+# %% 
+final_values2
+# %%
 plt.figure(figsize=(10, 6))
-plt.hist(final_values2, bins=30, edgecolor='black', color='skyblue')
-plt.hist(final_values2, bins=30, edgecolor='black', color='red')
-plt.title('Distribuição dos Valores Finais do Portfólio')
+
+# Histograma do primeiro portfólio
+plt.hist(final_values1, bins=30, edgecolor='black', color='skyblue', alpha=0.6, label='Standart Way')
+
+# Histograma do segundo portfólio
+plt.hist(final_values2, bins=30, edgecolor='black', color='red', alpha=0.6, label="Maltez's way")
+
+plt.title('Distribuição dos Valores Finais dos Portfólios')
 plt.xlabel('Valor Final do Portfólio (€)')
 plt.ylabel('Frequência')
+plt.legend()
 plt.grid(True)
 plt.show()
 
 
-# %%
-print(f"Totalidade de dinheiro alocado em Standart Investment: {total_invest[-1]}.")
-print(f"Totalidade de carteira de investimento em Standart Investment: {porfolio[-1]}.")
-
-print(f"Totalidade de dinheiro alocado: {total_allocation[-1]}.")
-print(f"Totalidade de carteira de investimento: {porfolio2[-1]}.")
-
-plt.figure(figsize=(12, 6))
-plt.plot(sp500_data['Date'], porfolio, label='Standart Investment', linestyle='solid', color='red')
-plt.plot(sp500_data['Date'], porfolio2, label="Maltez's way", linestyle='dotted', color='blue')
-plt.title("Standart Investment vs Maltez's way")
-improve_draw()
-plt.figure(figsize=(12, 6))
-plt.plot(sp500_data['Date'], total_invest, label='Standart Investment (Allocation)', linestyle='solid', color='red')
-plt.plot(sp500_data['Date'], total_allocation, label="Maltez's way (Allocation)", linestyle='dotted', color='blue')
-plt.title("Allocation")
-improve_draw()
 # %%
