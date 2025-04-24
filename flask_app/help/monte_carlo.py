@@ -317,7 +317,14 @@ pd.DataFrame(porfolio)
 #####################################################################################
 #Fazer a partir daqui
 # %%
-diference = (precos_df - y_pred_filtered) / y_pred_filtered
+# %%
+len(y_pred_filtered)
+# %%
+precos_df
+# %%
+#diference = (precos_df - y_pred_filtered) / y_pred_filtered, 
+# mas temos de por y_pred do mesmo tamanho do dataset
+diference = (precos_df - y_pred_filtered[:, np.newaxis]) / y_pred_filtered[:, np.newaxis]
 diference
 # %%
 # Método de weighted buy
