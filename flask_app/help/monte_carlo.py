@@ -317,6 +317,9 @@ pd.DataFrame(porfolio)
 #####################################################################################
 #Fazer a partir daqui
 # %%
+diference = (precos_df - y_pred_filtered) / y_pred_filtered
+diference
+# %%
 # Método de weighted buy
 allocation = (monthly_investment * (1 - 2.5 * diference/100)) # dinheiro investido mês a mês
 total_allocation = np.zeros(len(allocation))
