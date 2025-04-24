@@ -232,7 +232,7 @@ dias = len(datas)
 preco_inicial = sp500_data_since2017['Close'].values[0]
 mu = 0.8 # Ver o porque de ser este o valor, não deveria ser 0.0749???
 sigma = 0.2
-simulacoes = 200
+simulacoes = 100000
 
 # %%
 # Matriz de preços
@@ -361,7 +361,7 @@ final_values2
 plt.figure(figsize=(10, 6))
 
 # Histograma do primeiro portfólio
-plt.hist(final_values1, bins=30, edgecolor='black', color='skyblue', alpha=0.6, label='Standart Way')
+plt.hist(final_values1, bins=30, edgecolor='black', color='skyblue', alpha=0.6, label='Buy and Hold')
 
 # Histograma do segundo portfólio
 plt.hist(final_values2, bins=30, edgecolor='black', color='red', alpha=0.6, label="Maltez's way")
