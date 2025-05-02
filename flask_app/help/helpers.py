@@ -254,7 +254,7 @@ def get_interval(period):
     raise ValueError('Colocou valor errado em get_interval')
 
 # Comparar duas empresas em termos de alteração de percentagem num tempo específico.
-def compare(stock1, stock2, period): #TODO#
+def compare2(stock1, stock2, period): #TODO#
     data1 = get_data_percent(stock1, period, get_interval(period))
     data2 = get_data_percent(stock2, period, get_interval(period))
     return {"label1": data1[0],

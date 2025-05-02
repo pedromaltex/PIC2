@@ -17,7 +17,7 @@ from yahooquery import Screener
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
-from helpers import apology, login_required, lookup, usd, get_data, get_news, correlation, get_interval, get_data_percent, compare, dowl_data_return_dataset, calc_returns_daily, calc_corr, get_companiesbysector, heatmap, download_data
+from helpers import apology, login_required, lookup, usd, get_data, get_news, correlation, get_interval, get_data_percent, compare2, dowl_data_return_dataset, calc_returns_daily, calc_corr, get_companiesbysector, heatmap, download_data
 
 # Configure application
 app = Flask(__name__)
@@ -434,7 +434,7 @@ def quote():
 
         if request.form.get("symbol_compare"): #TODO# COLOCAR O COMPARE DOS HELPERS
             new_stock_symbol = request.form.get("symbol_compare")
-            comparison = compare(session['symbol'], new_stock_symbol, '1wk') #TODO# colocar timeline certa
+            comparison = compare2(session['symbol'], new_stock_symbol, '1wk') #TODO# colocar timeline certa
 
             #Aqui a correlation está sempre a 5 anos, corrigir
             return render_template("quoted.html", stock=stock, new_stock_symbol=new_stock_symbol.upper(), labels=comparison['label1'], values=comparison['value1'], values2=comparison['value2'], \
