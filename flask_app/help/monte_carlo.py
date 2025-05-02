@@ -83,7 +83,7 @@ def improve_draw():
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], y_pred_log, label='Exponential Growth', linestyle='dashdot', color='red')
 plt.plot(sp500_data['Date'], log_sp500, label=f'{name}', linestyle='solid', color='black')
-plt.title(f'Exponential vs {name} (Log Scale)')
+plt.title(f'Exponential vs {name} (Log Scale)', fontsize=15)
 x_pos = sp500_data['Date'].iloc[-10]
 y_pos = min(y_pred_log) * 1.05  # um pouco abaixo do topo
 plt.text(x_pos, y_pos, rf'$y ={{{coef_log[1]:.4f} + {coef_log[0]:.4f} \cdot x}}$ (Exponential Growth)',
@@ -99,7 +99,7 @@ improve_draw()
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], y_pred, label='Exponential Growth', linestyle='dashdot', color='red')
 plt.plot(sp500_data['Date'], y, label=f'{name}', linestyle='solid', color='black')
-plt.title(f'Exponential vs {name}')
+plt.title(f'Exponential vs {name}', fontsize=15)
 
 x_pos = sp500_data['Date'].iloc[-10]
 y_pos = min(y) * 1.05  # um pouco abaixo do topo
@@ -117,7 +117,7 @@ improve_draw()
 # Plotando os gráficos
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], diference, label=f'{name}', linestyle='solid', color='black')
-plt.title(f'Exponential vs {name} (Diference)')
+plt.title(f'Exponential vs {name} (Diference)', fontsize=15)
 
 improve_draw()
 
@@ -189,32 +189,16 @@ print(f"Totalidade de carteira de investimento: {porfolio2[-1]}.")
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], porfolio, label='Standart Investment', linestyle='solid', color='red')
 plt.plot(sp500_data['Date'], porfolio2, label="Maltez's way", linestyle='dotted', color='blue')
-plt.title("Standart Investment vs Maltez's way")
+plt.title("Standart Investment vs Maltez's way", fontsize=15)
 improve_draw()
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], total_invest, label='Standart Investment (Allocation)', linestyle='solid', color='red')
 plt.plot(sp500_data['Date'], total_allocation, label="Maltez's way (Allocation)", linestyle='dotted', color='blue')
-plt.title("Allocation")
+plt.title("Allocation", fontsize=15)
 improve_draw()
 
 # Ver se a função Diference tem média 0 num espaço grande de tempo
-np.mean(diference) 
-plt.figure(figsize=(12, 6))
-
-# Dividir a linha em duas: positiva e negativa
-positive_dates = sp500_data['Date'][diference >= 0]
-positive_values = diference[diference >= 0]
-
-negative_dates = sp500_data['Date'][diference < 0]
-negative_values = diference[diference < 0]
-
-# Desenhar linhas com cores diferentes
-plt.plot(positive_dates, positive_values, color='red', label='Positive')
-plt.plot(negative_dates, negative_values, color='green', label='Negative')
-
-plt.title(f'Exponential vs {name} (Diference)')
-improve_draw()
-
+print(f"Média do gráfico diference: {np.mean(diference)}%")
 
 # %%
 # Vamos fazer com dados até 2023 estudar 
@@ -263,11 +247,12 @@ dates_filtered = sp500_data.loc[mask, 'Date']
 y_pred_filtered = y_pred[mask.values]  # y_pred deve ter mesmo comprimento que sp500_data
 
 ############################
+# %%
 # Plot com datas reais no eixo X
 plt.figure(figsize=(12, 6))
 plt.plot(precos_df, alpha=0.6)
 plt.plot(dates_filtered, y_pred_filtered, label='Exponential Growth', linestyle='dashdot', color='black')
-plt.title("Simulação de Monte Carlo - Movimento Browniano Geométrico (com datas)")
+plt.title("Monte Carlo Simulation - Geometric Brownian Motion (with dates)", fontsize=15)
 plt.xlabel("Data")
 plt.ylabel("Preço simulado")
 plt.grid(True)
@@ -361,17 +346,71 @@ final_values2
 plt.figure(figsize=(10, 6))
 
 # Histograma do primeiro portfólio
-plt.hist(final_values1, bins=30, edgecolor='black', color='skyblue', alpha=0.6, label='Buy and Hold')
+plt.hist(final_values1, bins=30, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
 
 # Histograma do segundo portfólio
-plt.hist(final_values2, bins=30, edgecolor='black', color='red', alpha=0.6, label="Maltez's way")
+plt.hist(final_values2, bins=30, edgecolor='black', color='red', alpha=0.5, label="Maltez's way")
 
-plt.title('Distribuição dos Valores Finais dos Portfólios')
-plt.xlabel('Valor Final do Portfólio (€)')
-plt.ylabel('Frequência')
+plt.title('Final values of portfolio (distribution)', fontsize=15)
+plt.xlabel('Value of portfolio (€)')
+plt.ylabel('Frequency')
 plt.legend()
 plt.grid(True)
 plt.show()
 
 
+# %%
+plt.figure(figsize=(10, 6))
+
+final_allocation = total_allocation[-1, :]  # última linha (últimos valores de cada simulação)
+
+plt.hist(final_allocation, bins=30, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
+
+plt.title('Total allocation in Maltez way', fontsize=15)
+plt.xlabel('Final allocation (€)')
+plt.ylabel('Frequency')
+plt.legend()
+plt.grid(True)
+plt.show()
+# %%
+final_allocation
+# %%
+final_values2
+# %%
+final_values2_0 = np.array(final_values2)
+final_values2_0
+
+# %%
+roi_maltez = 100*(final_values2 - final_allocation)/final_allocation
+# %%
+roi_maltez
+# %%
+plt.hist(roi_maltez, bins=30, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
+
+# %%
+monthly_investment_array = np.ones(len(final_values1)) * monthly_investment
+monthly_investment_array
+# %%
+roi_standart = 100*(final_values1 - total_invest[-1])/total_invest[-1]
+# %%
+roi_standart
+# %%
+plt.hist(roi_standart, bins=30, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
+
+# %%
+# %%
+plt.figure(figsize=(10, 6))
+
+# Histograma do primeiro portfólio
+plt.hist(roi_standart, bins=30, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
+
+# Histograma do segundo portfólio
+plt.hist(roi_maltez, bins=45, edgecolor='black', color='red', alpha=0.5, label="Maltez's way")
+
+plt.title('ROI (Return over investment)', fontsize=15)
+plt.xlabel('ROI (Return over investment) (%)')
+plt.ylabel('Frequency')
+plt.legend()
+plt.grid(True)
+plt.show()
 # %%
