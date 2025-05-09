@@ -3,13 +3,16 @@ import matplotlib.pyplot as plt
 import yfinance as yf
 import pandas as pd
 import numpy as np
-from plotter import plot1, plot2, plot3
+from plotter import plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, plot9, plot10
 
 ####################################
 # Objetivo: Regressão linear SP500 #
 ####################################
 Monthly_investment = 10
-Year = 2000
+Year = 2008
+simulacoes = 100000
+
+
 # Função para obter os dados históricos do S&P 500
 def get_data(symbol='^GSPC', period='80y', interval='1mo'):
     data = yf.download(tickers=symbol, period=period, interval=interval)
@@ -74,30 +77,8 @@ def improve_draw():
 plot1(sp500_data['Date'], sp500_data['Close'], name)
 plot2(sp500_data['Date'], y_pred_log, log_sp500, name, coef_log[1], coef_log[0])
 plot3(sp500_data['Date'], y_pred, y, name, coef_log[1], coef_log[0])
+plot4(sp500_data['Date'], diference, name)
 
-# %%
-# Plotando os gráficos
-plt.figure(figsize=(12, 6))
-plt.plot(sp500_data['Date'], y_pred, label='Exponential Growth', linestyle='dashdot', color='red')
-plt.plot(sp500_data['Date'], y, label=f'{name}', linestyle='solid', color='black')
-plt.title(f'Exponential vs {name}', fontsize=20)
-
-x_pos = sp500_data['Date'].iloc[-10]
-y_pos = min(y) * 1.05  # um pouco abaixo do topo
-plt.text(x_pos,y_pos , rf'$y = e^{{{coef_log[1]:.4f} + {coef_log[0]:.4f} \cdot x}}$ (Exponential Growth)',
-         ha='right', va='bottom',
-         color='red',
-         fontsize=20,
-
-         bbox=dict(facecolor='white', alpha=0.6))
-
-improve_draw()
-# %%
-# Plot SP500 - exponential 
-plt.figure(figsize=(12, 6))
-plt.plot(sp500_data['Date'], diference, label=f'{name}', linestyle='solid', color='black')
-plt.title(f'Exponential vs {name} (Diference)', fontsize=20)
-improve_draw()
 
 # Calcular rendimento médio do sp500, apenas funciona com períodos em meses
 y1 = y_pred[-11]
@@ -117,18 +98,12 @@ print(f"Crescimento médio mensal: {growth_rate * 100:.2f}%")
 print(f"Crescimento médio anual (CAGR): {cagr * 100:.2f}%")
 # %%
 # MÉTODO TESTE
-Monthly_investment = 10
-total_invest = np.zeros(len(y))
-total_invest[0] = Monthly_investment
-for i in range(1, len(total_invest)):
-    total_invest[i] = total_invest[i-1] + Monthly_investment
+total_invest = Monthly_investment * (np.arange(len(y)) + 1)
 
 
 sp500_price = y / 10
 
-stocks_owned = Monthly_investment / sp500_price # Quantas ações consigo comprar com 500 euros
-for i in range(len(stocks_owned)-1):
-    stocks_owned[i+1] += stocks_owned[i] # Tornar a função acumulativa
+stocks_owned = np.cumsum(Monthly_investment / sp500_price)
 
 
 
@@ -138,18 +113,13 @@ porfolio = stocks_owned * sp500_price # Calcular evolução portfolio
 # Método de weighted buy
 allocation = (Monthly_investment * (1 - 2.5 * diference/100)) # dinheiro investido mês a mês
 total_allocation = np.zeros(len(allocation))
-for i in range(len(allocation)):
-    if allocation[i] < 0:
-        allocation[i] = 0 # Não retirar dinheiro para não pagar impostos
-    if allocation[i] > 2*Monthly_investment:
-        allocation[i] = 2*Monthly_investment # Não retirar dinheiro para não pagar impostos
-    total_allocation[i] = sum(allocation[:i+1])
+allocation = np.clip(allocation, Monthly_investment * 0.1, Monthly_investment * 2)
+total_allocation = np.cumsum(allocation)
 
 
 stocks_owned2 = allocation / sp500_price
 
-for i in range(len(stocks_owned2)-1):
-    stocks_owned2[i+1] += stocks_owned2[i]
+stocks_owned2 = np.cumsum(allocation / sp500_price)
 
 porfolio2 = stocks_owned2 * sp500_price
 # %%
@@ -158,16 +128,9 @@ print(f"Totalidade de carteira de investimento em Standart Investment: {porfolio
 print(f"Totalidade de dinheiro alocado: {total_allocation[-1]}.")
 print(f"Totalidade de carteira de investimento: {porfolio2[-1]}.")
 # %%
-plt.figure(figsize=(12, 6))
-plt.plot(sp500_data['Date'], porfolio, label='Standart Investment', linestyle='solid', color='red')
-plt.plot(sp500_data['Date'], porfolio2, label="Maltez's way", linestyle='dotted', color='blue')
-plt.title("Standart Investment vs Maltez's way", fontsize=20)
-improve_draw()
-plt.figure(figsize=(12, 6))
-plt.plot(sp500_data['Date'], total_invest, label='Standart Investment (Allocation)', linestyle='solid', color='red')
-plt.plot(sp500_data['Date'], total_allocation, label="Maltez's way (Allocation)", linestyle='dotted', color='blue')
-plt.title("Allocation", fontsize=20)
-improve_draw()
+plot5(sp500_data['Date'], porfolio, porfolio2)
+plot6(sp500_data['Date'], total_invest, total_allocation)
+
 # %%
 # Ver se a função Diference tem média 0 num espaço grande de tempo
 print(f"Média do gráfico diference: {np.mean(diference)}%")
@@ -182,19 +145,14 @@ sp500_data_since_a_year['Close'].values[0][0]
 datas = sp500_data_since_a_year['Date'].reset_index(drop=True)
 time = len(datas)
 
-
-
-
-
 # %%
 # Parâmetros
 preco_inicial = sp500_data_since_a_year['Close'].values[0]
 # Retornos logarítmicos mensais
 log_returns = np.log(sp500_data['Close'] / sp500_data['Close'].shift(1)).dropna()
 # Desvio padrão mensal
-sigma = log_returns.std() / 2 # tirar o /2
+sigma = log_returns.std()
 mu = np.log(1 + cagr) / 12
-simulacoes = 100
 # Matriz de preços
 precos = np.zeros((time, simulacoes))
 precos[0] = preco_inicial
@@ -223,18 +181,7 @@ dates_filtered = sp500_data.loc[mask, 'Date']
 y_pred_filtered = y_pred[mask.values]  # y_pred deve ter mesmo comprimento que sp500_data
 
 ############################
-
-# Plot com datas reais no eixo X
-plt.figure(figsize=(12, 6))
-plt.plot(precos_df, alpha=0.6)
-plt.plot(dates_filtered, y_pred_filtered, label='Exponential Growth', linestyle='dashdot', color='black')
-plt.title("Monte Carlo Simulation - Geometric Brownian Motion (with dates)", fontsize=20)
-plt.xlabel("Data")
-plt.ylabel("Preço simulado")
-plt.grid(True)
-plt.tight_layout()
-plt.show()
-
+plot7(precos_df, dates_filtered, y_pred_filtered)
 
 # %%
 # MÉTODO TESTE
@@ -251,15 +198,8 @@ sp500_price_monte = precos_df / 10
 stocks_owned_matrix = np.zeros_like(sp500_price_monte)
 
 # Iterar por cada simulação (coluna)
-for i in range(sp500_price_monte.shape[1]):
-    prices = sp500_price_monte.iloc[:, i].values  # preços da simulação i
-    stocks = np.zeros_like(prices)
-    stocks[0] = Monthly_investment / prices[0]
-    
-    for t in range(1, len(prices)):
-        stocks[t] = stocks[t-1] + (Monthly_investment / prices[t])
-    
-    stocks_owned_matrix[:, i] = stocks  # guardar resultado
+stocks_owned_matrix = np.cumsum(Monthly_investment / sp500_price_monte.values, axis=0)
+
 #######################
 # %%
 pd.DataFrame(stocks_owned_matrix)
@@ -272,7 +212,7 @@ diference = 100 * (precos_df - y_pred_filtered[:, np.newaxis]) / y_pred_filtered
 # Método de weighted buy
 allocation = (Monthly_investment * (1 - 2.5 * diference/100)) # dinheiro investido mês a 
 
-allocation = np.where(allocation < 0, 0, allocation)
+allocation = np.where(allocation < Monthly_investment*0.1, Monthly_investment*0.1, allocation)
 total_allocation = np.cumsum(allocation, axis=0)
 
 pd.DataFrame(allocation)
@@ -288,51 +228,13 @@ porfolio2 = stocks_owned2 * sp500_price_monte
 final_values2 = porfolio2.iloc[-1]  # pega os valores da última data
 final_values1 = porfolio.iloc[-1]
 
-# %%
-# Define a largura dos bins
-bin_width = final_values2.max()/100
-
-# Define os limites globais
-min_val = min(final_values1.min(), final_values2.min())
-max_val = max(final_values1.max(), final_values2.max())
-
-# Gera os bins com mesma largura
-bins = np.arange(np.floor(min_val), np.ceil(max_val) + bin_width, bin_width)
-
-plt.figure(figsize=(10, 6))
-
-# Histograma do primeiro portfólio
-plt.hist(final_values1, bins=bins, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
-
-# Histograma do segundo portfólio
-plt.hist(final_values2, bins=bins, edgecolor='black', color='red', alpha=0.5, label="Maltez's way")
-
-
-# Plot mean lines
-plt.axvline(np.mean(final_values1), color='blue', linestyle='dashed', linewidth=2, label=f'Mean Buy & Hold: {np.mean(final_values1):.2f}')
-plt.axvline(np.mean(final_values2), color='darkred', linestyle='dashed', linewidth=2, label=f"Mean Maltez's way: {np.mean(final_values2):.2f}")
-
-plt.title('Final values of portfolio (distribution)', fontsize=15)
-plt.xlabel('Value of portfolio (€)')
-plt.ylabel('Frequency')
-plt.legend()
-plt.grid(True)
-plt.show()
+plot8(final_values1, final_values2)
 
 
 # %%
-plt.figure(figsize=(10, 6))
-
 final_allocation = total_allocation[-1, :]  # última linha (últimos valores de cada simulação)
 
-plt.hist(final_allocation, bins=30, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
-
-plt.title('Total allocation in Maltez way', fontsize=15)
-plt.xlabel('Final allocation (€)')
-plt.ylabel('Frequency')
-plt.legend()
-plt.grid(True)
-plt.show()
+plot9(total_allocation, final_allocation)
 
 final_values2_0 = np.array(final_values2)
 
@@ -352,22 +254,8 @@ max_val = max(roi_standart.max(), roi_maltez.max())
 # Gera os bins com mesma largura
 bins = np.arange(np.floor(min_val), np.ceil(max_val) + bin_width, bin_width)
 
-plt.figure(figsize=(10, 6))
-# Histograma do primeiro portfólio
-plt.hist(roi_standart, bins=bins, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
-# Histograma do segundo portfólio
-plt.hist(roi_maltez, bins=bins, edgecolor='black', color='red', alpha=0.5, label="Maltez's way")
+plot10(roi_standart, roi_maltez, bins)
 
-# Plot mean lines
-plt.axvline(np.mean(roi_standart), color='blue', linestyle='dashed', linewidth=2, label=f'Mean Buy & Hold: {np.mean(roi_standart):.2f}%')
-plt.axvline(np.mean(roi_maltez), color='darkred', linestyle='dashed', linewidth=2, label=f"Mean Maltez's way: {np.mean(roi_maltez):.2f}%")
-
-plt.title('ROI (Return over investment)', fontsize=15)
-plt.xlabel('ROI (Return over investment) (%)')
-plt.ylabel('Frequency')
-plt.legend()
-plt.grid(True)
-plt.show()
 # %%
 
 #############################################
