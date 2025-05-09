@@ -19,6 +19,8 @@ try:
     # Carregar de volta (sem perda de tipo)
     sp500_data = pd.read_pickle("/home/pedro-maltez-ubuntu/Documents/PIC2/flask_app/help/S&P500.pkl")
     sp500_data = sp500_data[['Close']].reset_index()
+    name = 'S&P 500'
+
 except:
     # Obter dados históricos do S&P 500
     name, periodo, intervalo = '^GSPC', '40y', '1mo'
@@ -31,13 +33,9 @@ sp500_data
 # unit_of_time
 # Criar um vetor de anos com base no número de dados
 unit_of_time = np.arange(len(sp500_data))
-#unit_of_time
 
-# log_sp500
 # Criar log do sp500
 log_sp500 = np.log(sp500_data['Close'])
-#log_sp500
-
 
 # Regressão linear simples
 # Sample data

@@ -19,6 +19,7 @@ try:
     # Carregar de volta (sem perda de tipo)
     sp500_data = pd.read_pickle("/home/pedro-maltez-ubuntu/Documents/PIC2/flask_app/help/S&P500.pkl")
     sp500_data = sp500_data[['Close']].reset_index()
+    name = 'S&P 500'
 except:
     # Obter dados históricos do S&P 500
     name, periodo, intervalo = '^GSPC', '40y', '1mo'
@@ -72,7 +73,7 @@ y_pred = np.exp(y_pred_log)
 
 # SP500 - exponential 
 
-diference = 100* (y - y_pred)/y_pred
+diference = 100 * (y - y_pred)/y_pred
 #diference
 
 # Função que facilita o plot 
@@ -84,6 +85,12 @@ def improve_draw():
     plt.legend()
     plt.grid()
     plt.show()
+
+# Plotando os gráficos
+plt.figure(figsize=(12, 6))
+plt.plot(sp500_data['Date'], sp500_data['Close'], label='Points', linestyle='solid', color='black')
+plt.title(f'{name} Historical Data', fontsize=20)
+improve_draw()
 
 # Plotando os gráficos
 plt.figure(figsize=(12, 6))
@@ -99,7 +106,6 @@ plt.text(x_pos, y_pos, rf'$y ={{{coef_log[1]:.4f} + {coef_log[0]:.4f} \cdot x}}$
          bbox=dict(facecolor='white', alpha=0.6))
 
 improve_draw()
-
 
 # Plotando os gráficos
 plt.figure(figsize=(12, 6))
@@ -147,7 +153,8 @@ print(f"Crescimento médio mensal: {growth_rate * 100:.2f}%")
 print(f"Crescimento médio anual (CAGR): {cagr * 100:.2f}%")
 
 # MÉTODO TESTE
-monthly_investment = 30000/len(y)
+#monthly_investment = 30000/len(y)
+monthly_investment = 500
 total_invest = np.zeros(len(y))
 total_invest[0] = monthly_investment
 for i in range(1, len(total_invest)):
@@ -220,32 +227,33 @@ sp500_data_since2017['Close'].values[0][0]
 # %%
 # Obter as datas reais
 datas = sp500_data_since2017['Date'].reset_index(drop=True)
-dias = len(datas)
+time = len(datas)
 
-# %%
+
 # Parâmetros
 preco_inicial = sp500_data_since2017['Close'].values[0]
-sigma = 0.2
-mu = 0.8 # Ver o porque de ser este o valor, não deveria ser 0.0749???
-simulacoes = 1000
+sigma = 0.045
+mu = np.log(1 + cagr) / 12
+simulacoes = 10000
 
-# %%
+
 # Matriz de preços
-precos = np.zeros((dias, simulacoes))
+precos = np.zeros((time, simulacoes))
 precos[0] = preco_inicial
 
-# Simulação
+# Correção da simulação
 for s in range(simulacoes):
-    for t in range(1, dias):
+    for t in range(1, time):
         epsilon = np.random.normal()
-        drift = (mu - 0.5 * sigma**2) * (1/dias)
-        diffusion = sigma * np.sqrt(1/dias) * epsilon
+        drift = (mu - 0.5 * sigma**2)
+        diffusion = sigma * epsilon
         precos[t, s] = precos[t - 1, s] * np.exp(drift + diffusion)
+
 
 # Converter em DataFrame com índice de datas
 precos_df = pd.DataFrame(precos, index=datas)
 precos_df
-# %%
+
 ##########################
 # CHATGPT
 # Colocar y_pred em 2024 até 2025
@@ -258,7 +266,7 @@ dates_filtered = sp500_data.loc[mask, 'Date']
 y_pred_filtered = y_pred[mask.values]  # y_pred deve ter mesmo comprimento que sp500_data
 
 ############################
-# %%
+
 # Plot com datas reais no eixo X
 plt.figure(figsize=(12, 6))
 plt.plot(precos_df, alpha=0.6)
@@ -270,10 +278,11 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
+
 # %%
 # MÉTODO TESTE
 # monthly investment
-monthly_investment =  45000 / len(y_pred_filtered)
+#monthly_investment =  45000 / len(y_pred_filtered)
 monthly_investment = 500
 monthly_investment
 # %%
@@ -354,13 +363,28 @@ final_values1
 # %% 
 final_values2
 # %%
+# Define a largura dos bins
+bin_width = 5000
+
+# Define os limites globais
+min_val = min(final_values1.min(), final_values2.min())
+max_val = max(final_values1.max(), final_values2.max())
+
+# Gera os bins com mesma largura
+bins = np.arange(np.floor(min_val), np.ceil(max_val) + bin_width, bin_width)
+
 plt.figure(figsize=(10, 6))
 
 # Histograma do primeiro portfólio
-plt.hist(final_values1, bins=30, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
+plt.hist(final_values1, bins=bins, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
 
 # Histograma do segundo portfólio
-plt.hist(final_values2, bins=40, edgecolor='black', color='red', alpha=0.5, label="Maltez's way")
+plt.hist(final_values2, bins=bins, edgecolor='black', color='red', alpha=0.5, label="Maltez's way")
+
+
+# Plot mean lines
+plt.axvline(np.mean(final_values1), color='blue', linestyle='dashed', linewidth=2, label=f'Mean Buy & Hold: {np.mean(final_values1):.2f}')
+plt.axvline(np.mean(final_values2), color='darkred', linestyle='dashed', linewidth=2, label=f"Mean Maltez's way: {np.mean(final_values2):.2f}")
 
 plt.title('Final values of portfolio (distribution)', fontsize=15)
 plt.xlabel('Value of portfolio (€)')
@@ -383,40 +407,36 @@ plt.ylabel('Frequency')
 plt.legend()
 plt.grid(True)
 plt.show()
-# %%
-final_allocation
-# %%
-final_values2
-# %%
+
 final_values2_0 = np.array(final_values2)
 final_values2_0
 
-# %%
 roi_maltez = 100*(final_values2 - final_allocation)/final_allocation
-# %%
-roi_maltez
-# %%
-plt.hist(roi_maltez, bins=30, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
 
-# %%
 monthly_investment_array = np.ones(len(final_values1)) * monthly_investment
 monthly_investment_array
-# %%
+
 roi_standart = 100*(final_values1 - total_invest[-1])/total_invest[-1]
-# %%
-roi_standart
-# %%
-plt.hist(roi_standart, bins=30, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
+
 
 # %%
 # %%
+
+# Define a largura dos bins
+bin_width = 10
+
+# Define os limites globais
+min_val = min(roi_standart.min(), roi_maltez.min())
+max_val = max(roi_standart.max(), roi_maltez.max())
+
+# Gera os bins com mesma largura
+bins = np.arange(np.floor(min_val), np.ceil(max_val) + bin_width, bin_width)
+
 plt.figure(figsize=(10, 6))
-
 # Histograma do primeiro portfólio
-plt.hist(roi_standart, bins=30, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
-
+plt.hist(roi_standart, bins=bins, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
 # Histograma do segundo portfólio
-plt.hist(roi_maltez, bins=45, edgecolor='black', color='red', alpha=0.5, label="Maltez's way")
+plt.hist(roi_maltez, bins=bins, edgecolor='black', color='red', alpha=0.5, label="Maltez's way")
 
 # Plot mean lines
 plt.axvline(np.mean(roi_standart), color='blue', linestyle='dashed', linewidth=2, label=f'Mean Buy & Hold: {np.mean(roi_standart):.2f}%')
