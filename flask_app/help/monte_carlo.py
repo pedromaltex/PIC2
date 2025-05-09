@@ -3,12 +3,13 @@ import matplotlib.pyplot as plt
 import yfinance as yf
 import pandas as pd
 import numpy as np
+from plotter import plot1, plot2, plot3
 
 ####################################
 # Objetivo: Regressão linear SP500 #
 ####################################
 Monthly_investment = 10
-
+Year = 2000
 # Função para obter os dados históricos do S&P 500
 def get_data(symbol='^GSPC', period='80y', interval='1mo'):
     data = yf.download(tickers=symbol, period=period, interval=interval)
@@ -19,14 +20,14 @@ def get_data(symbol='^GSPC', period='80y', interval='1mo'):
 try:
     # Carregar de volta (sem perda de tipo)
     sp500_data = pd.read_pickle("/home/pedro-maltez-ubuntu/Documents/PIC2/flask_app/help/S&P500.pkl")
-    sp500_data = sp500_data[['Close']].reset_index()
     name = 'S&P 500'
 except:
     # Obter dados históricos do S&P 500
     name, periodo, intervalo = '^GSPC', '40y', '1mo'
     sp500_data = get_data(name, periodo, intervalo)
-    #sp500_data = sp500_data[['Close']].reset_index()
     name = yf.Ticker(name).info['longName']
+
+sp500_data = sp500_data[['Close']].reset_index()
 
 # Criar um vetor de anos com base no número de dados
 unit_of_time = np.arange(len(sp500_data))
@@ -70,24 +71,10 @@ def improve_draw():
     plt.show()
 
 # Plotando os gráficos
-plt.figure(figsize=(12, 6))
-plt.plot(sp500_data['Date'], sp500_data['Close'], label='Points', linestyle='solid', color='black')
-plt.title(f'{name} Historical Data', fontsize=20)
-improve_draw()
+plot1(sp500_data['Date'], sp500_data['Close'], name)
+plot2(sp500_data['Date'], y_pred_log, log_sp500, name, coef_log[1], coef_log[0])
+plot3(sp500_data['Date'], y_pred, y, name, coef_log[1], coef_log[0])
 
-# Plotando os gráficos
-plt.figure(figsize=(12, 6))
-plt.plot(sp500_data['Date'], y_pred_log, label='Exponential Growth', linestyle='dashdot', color='red')
-plt.plot(sp500_data['Date'], log_sp500, label=f'{name}', linestyle='solid', color='black')
-plt.title(f'Exponential vs {name} (Log Scale)', fontsize=20)
-x_pos = sp500_data['Date'].iloc[-10]
-y_pos = min(y_pred_log) * 1.05  # um pouco abaixo do topo
-plt.text(x_pos, y_pos, rf'$y ={{{coef_log[1]:.4f} + {coef_log[0]:.4f} \cdot x}}$ (Exponential Growth)',
-         fontsize=20,
-         ha='right', va='bottom',
-         color='red',
-         bbox=dict(facecolor='white', alpha=0.6))
-improve_draw()
 # %%
 # Plotando os gráficos
 plt.figure(figsize=(12, 6))
@@ -185,7 +172,7 @@ improve_draw()
 # Ver se a função Diference tem média 0 num espaço grande de tempo
 print(f"Média do gráfico diference: {np.mean(diference)}%")
 # %%
-year = 2000
+year = Year
 # Vamos fazer com dados até x estudar 
 sp500_data_since_a_year = sp500_data[(sp500_data['Date'] <= '2025-12-31') & (sp500_data['Date'] >= f'{year}-01-01')]
 days_year = len(sp500_data_since_a_year)
@@ -196,24 +183,22 @@ datas = sp500_data_since_a_year['Date'].reset_index(drop=True)
 time = len(datas)
 
 
+
+
+
+# %%
 # Parâmetros
 preco_inicial = sp500_data_since_a_year['Close'].values[0]
-
 # Retornos logarítmicos mensais
 log_returns = np.log(sp500_data['Close'] / sp500_data['Close'].shift(1)).dropna()
-
 # Desvio padrão mensal
-sigma = log_returns.std()
-
+sigma = log_returns.std() / 2 # tirar o /2
 mu = np.log(1 + cagr) / 12
 simulacoes = 100
-
-
 # Matriz de preços
 precos = np.zeros((time, simulacoes))
 precos[0] = preco_inicial
 
-# %%
 # Correção da simulação
 for s in range(simulacoes):
     for t in range(1, time):
@@ -260,6 +245,7 @@ for i in range(1, len(total_invest)):
     total_invest[i] = total_invest[i-1] + Monthly_investment
 
 sp500_price_monte = precos_df / 10
+
 ######################## Chat GPT
 # Inicializar o array para guardar a evolução de ações compradas por simulação
 stocks_owned_matrix = np.zeros_like(sp500_price_monte)
@@ -355,8 +341,6 @@ roi_maltez = 100*(final_values2 - final_allocation)/final_allocation
 monthly_investment_array = np.ones(len(final_values1)) * Monthly_investment
 
 roi_standart = 100*(final_values1 - total_invest[-1])/total_invest[-1]
-# %%
-# %%
 
 # Define a largura dos bins
 bin_width = roi_maltez.max()/50
