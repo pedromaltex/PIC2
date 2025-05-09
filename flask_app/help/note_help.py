@@ -17,7 +17,8 @@ def get_data(symbol='^GSPC', period='80y', interval='1mo'):
 
 try:
     # Carregar de volta (sem perda de tipo)
-    sp500_data = pd.read_pickle("S&P500.pkl")
+    sp500_data = pd.read_pickle("/home/pedro-maltez-ubuntu/Documents/PIC2/flask_app/help/S&P500.pkl")
+    sp500_data = sp500_data[['Close']].reset_index()
 except:
     # Obter dados históricos do S&P 500
     name, periodo, intervalo = '^GSPC', '40y', '1mo'
@@ -25,7 +26,7 @@ except:
     #sp500_data = sp500_data[['Close']].reset_index()
     name = yf.Ticker(name).info['longName']
 
-
+sp500_data
 # %%
 # unit_of_time
 # Criar um vetor de anos com base no número de dados

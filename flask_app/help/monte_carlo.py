@@ -11,14 +11,20 @@ import numpy as np
 # Função para obter os dados históricos do S&P 500
 def get_data(symbol='^GSPC', period='80y', interval='1mo'):
     data = yf.download(tickers=symbol, period=period, interval=interval)
+    data.to_pickle("S&P500.pkl")
     data = data[['Close']].reset_index()
     return data
 
-# sp500_data
-# Obter dados históricos do S&P 500
-name, periodo, intervalo = '^GSPC', '40y', '1mo'
-sp500_data = get_data(name, periodo, intervalo)
-name = yf.Ticker(name).info['longName']
+try:
+    # Carregar de volta (sem perda de tipo)
+    sp500_data = pd.read_pickle("/home/pedro-maltez-ubuntu/Documents/PIC2/flask_app/help/S&P500.pkl")
+    sp500_data = sp500_data[['Close']].reset_index()
+except:
+    # Obter dados históricos do S&P 500
+    name, periodo, intervalo = '^GSPC', '40y', '1mo'
+    sp500_data = get_data(name, periodo, intervalo)
+    #sp500_data = sp500_data[['Close']].reset_index()
+    name = yf.Ticker(name).info['longName']
 
 #sp500_data
 
@@ -83,11 +89,11 @@ def improve_draw():
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], y_pred_log, label='Exponential Growth', linestyle='dashdot', color='red')
 plt.plot(sp500_data['Date'], log_sp500, label=f'{name}', linestyle='solid', color='black')
-plt.title(f'Exponential vs {name} (Log Scale)', fontsize=15)
+plt.title(f'Exponential vs {name} (Log Scale)', fontsize=20)
 x_pos = sp500_data['Date'].iloc[-10]
 y_pos = min(y_pred_log) * 1.05  # um pouco abaixo do topo
 plt.text(x_pos, y_pos, rf'$y ={{{coef_log[1]:.4f} + {coef_log[0]:.4f} \cdot x}}$ (Exponential Growth)',
-         fontsize=13,
+         fontsize=20,
          ha='right', va='bottom',
          color='red',
          bbox=dict(facecolor='white', alpha=0.6))
@@ -99,14 +105,15 @@ improve_draw()
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], y_pred, label='Exponential Growth', linestyle='dashdot', color='red')
 plt.plot(sp500_data['Date'], y, label=f'{name}', linestyle='solid', color='black')
-plt.title(f'Exponential vs {name}', fontsize=15)
+plt.title(f'Exponential vs {name}', fontsize=20)
 
 x_pos = sp500_data['Date'].iloc[-10]
 y_pos = min(y) * 1.05  # um pouco abaixo do topo
 plt.text(x_pos,y_pos , rf'$y = e^{{{coef_log[1]:.4f} + {coef_log[0]:.4f} \cdot x}}$ (Exponential Growth)',
-         fontsize=13,
          ha='right', va='bottom',
          color='red',
+         fontsize=20,
+
          bbox=dict(facecolor='white', alpha=0.6))
 
 improve_draw()
@@ -117,7 +124,7 @@ improve_draw()
 # Plotando os gráficos
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], diference, label=f'{name}', linestyle='solid', color='black')
-plt.title(f'Exponential vs {name} (Diference)', fontsize=15)
+plt.title(f'Exponential vs {name} (Diference)', fontsize=20)
 
 improve_draw()
 
@@ -158,13 +165,15 @@ for i in range(len(stocks_owned)-1):
 
 porfolio = stocks_owned * sp500_price # Calcular evolução portfolio
 
-
+# %%
 # Método de weighted buy
 allocation = (monthly_investment * (1 - 2.5 * diference/100)) # dinheiro investido mês a mês
 total_allocation = np.zeros(len(allocation))
 for i in range(len(allocation)):
     if allocation[i] < 0:
         allocation[i] = 0 # Não retirar dinheiro para não pagar impostos
+    if allocation[i] > 2*monthly_investment:
+        allocation[i] = 2*monthly_investment # Não retirar dinheiro para não pagar impostos
     total_allocation[i] = sum(allocation[:i+1])
 
 total_allocation 
@@ -189,16 +198,18 @@ print(f"Totalidade de carteira de investimento: {porfolio2[-1]}.")
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], porfolio, label='Standart Investment', linestyle='solid', color='red')
 plt.plot(sp500_data['Date'], porfolio2, label="Maltez's way", linestyle='dotted', color='blue')
-plt.title("Standart Investment vs Maltez's way", fontsize=15)
+plt.title("Standart Investment vs Maltez's way", fontsize=20)
 improve_draw()
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], total_invest, label='Standart Investment (Allocation)', linestyle='solid', color='red')
 plt.plot(sp500_data['Date'], total_allocation, label="Maltez's way (Allocation)", linestyle='dotted', color='blue')
-plt.title("Allocation", fontsize=15)
+plt.title("Allocation", fontsize=20)
 improve_draw()
 
 # Ver se a função Diference tem média 0 num espaço grande de tempo
 print(f"Média do gráfico diference: {np.mean(diference)}%")
+
+
 
 # %%
 # Vamos fazer com dados até 2023 estudar 
@@ -214,9 +225,9 @@ dias = len(datas)
 # %%
 # Parâmetros
 preco_inicial = sp500_data_since2017['Close'].values[0]
-mu = 0.8 # Ver o porque de ser este o valor, não deveria ser 0.0749???
 sigma = 0.2
-simulacoes = 100000
+mu = 0.8 # Ver o porque de ser este o valor, não deveria ser 0.0749???
+simulacoes = 1000
 
 # %%
 # Matriz de preços
@@ -252,7 +263,7 @@ y_pred_filtered = y_pred[mask.values]  # y_pred deve ter mesmo comprimento que s
 plt.figure(figsize=(12, 6))
 plt.plot(precos_df, alpha=0.6)
 plt.plot(dates_filtered, y_pred_filtered, label='Exponential Growth', linestyle='dashdot', color='black')
-plt.title("Monte Carlo Simulation - Geometric Brownian Motion (with dates)", fontsize=15)
+plt.title("Monte Carlo Simulation - Geometric Brownian Motion (with dates)", fontsize=20)
 plt.xlabel("Data")
 plt.ylabel("Preço simulado")
 plt.grid(True)
@@ -349,7 +360,7 @@ plt.figure(figsize=(10, 6))
 plt.hist(final_values1, bins=30, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
 
 # Histograma do segundo portfólio
-plt.hist(final_values2, bins=30, edgecolor='black', color='red', alpha=0.5, label="Maltez's way")
+plt.hist(final_values2, bins=40, edgecolor='black', color='red', alpha=0.5, label="Maltez's way")
 
 plt.title('Final values of portfolio (distribution)', fontsize=15)
 plt.xlabel('Value of portfolio (€)')
@@ -407,6 +418,10 @@ plt.hist(roi_standart, bins=30, edgecolor='black', color='skyblue', alpha=1, lab
 # Histograma do segundo portfólio
 plt.hist(roi_maltez, bins=45, edgecolor='black', color='red', alpha=0.5, label="Maltez's way")
 
+# Plot mean lines
+plt.axvline(np.mean(roi_standart), color='blue', linestyle='dashed', linewidth=2, label=f'Mean Buy & Hold: {np.mean(roi_standart):.2f}%')
+plt.axvline(np.mean(roi_maltez), color='darkred', linestyle='dashed', linewidth=2, label=f"Mean Maltez's way: {np.mean(roi_maltez):.2f}%")
+
 plt.title('ROI (Return over investment)', fontsize=15)
 plt.xlabel('ROI (Return over investment) (%)')
 plt.ylabel('Frequency')
@@ -414,3 +429,5 @@ plt.legend()
 plt.grid(True)
 plt.show()
 # %%
+
+#############################################
