@@ -7,6 +7,7 @@ import numpy as np
 ####################################
 # Objetivo: Regressão linear SP500 #
 ####################################
+Monthly_investment = 10
 
 # Função para obter os dados históricos do S&P 500
 def get_data(symbol='^GSPC', period='80y', interval='1mo'):
@@ -27,54 +28,36 @@ except:
     #sp500_data = sp500_data[['Close']].reset_index()
     name = yf.Ticker(name).info['longName']
 
-#sp500_data
-
-# unit_of_time
 # Criar um vetor de anos com base no número de dados
 unit_of_time = np.arange(len(sp500_data))
-#unit_of_time
 
-# log_sp500
 # Criar log do sp500
 log_sp500 = np.log(sp500_data['Close'])
-#log_sp500
 
 
 # Regressão linear simples
-# Sample data
 x = unit_of_time
 y_log = log_sp500
 y = np.array(sp500_data['Close'])
 y = y.flatten()
-#y
 
-# x,y
 # Garantir que ambos são arrays numpy para evitar erros de broadcasting
 x = np.array(x)
 y_log = np.array(y_log)
 
-
-#x, y_log, y
-
-# x_mean,y_mean
 # Compute means
 x_mean = np.mean(x)
 y_mean = np.mean(y)
 y_mean_log = np.mean(y_log)
-
-#x_mean,y_mean_log
 
 # Example of NumPy's polyfit
 coef_log = np.polyfit(x, y_log, 1)
 y_pred_log = np.polyval(coef_log, x)
 coef_log = coef_log.flatten()
 y_pred = np.exp(y_pred_log)
-#y_pred
 
-# SP500 - exponential 
-
+# SP500 - exponential (relative)
 diference = 100 * (y - y_pred)/y_pred
-#diference
 
 # Função que facilita o plot 
 def improve_draw():
@@ -104,9 +87,8 @@ plt.text(x_pos, y_pos, rf'$y ={{{coef_log[1]:.4f} + {coef_log[0]:.4f} \cdot x}}$
          ha='right', va='bottom',
          color='red',
          bbox=dict(facecolor='white', alpha=0.6))
-
 improve_draw()
-
+# %%
 # Plotando os gráficos
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], y_pred, label='Exponential Growth', linestyle='dashdot', color='red')
@@ -123,48 +105,41 @@ plt.text(x_pos,y_pos , rf'$y = e^{{{coef_log[1]:.4f} + {coef_log[0]:.4f} \cdot x
          bbox=dict(facecolor='white', alpha=0.6))
 
 improve_draw()
-
-
-
+# %%
 # Plot SP500 - exponential 
-# Plotando os gráficos
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], diference, label=f'{name}', linestyle='solid', color='black')
 plt.title(f'Exponential vs {name} (Diference)', fontsize=20)
-
 improve_draw()
-
 
 # Calcular rendimento médio do sp500, apenas funciona com períodos em meses
 y1 = y_pred[-11]
 y2 = y_pred[-23]
 percent = 100 * (y1 - y2) / y2
+# %%
 print(f"Preço teste: {y1}")
 print(f"Preço teste 12 meses atrás: {y2}")
-
 print(f"Rendimento médio do {name}: {percent}%")
 
 # A inclinação B1 representa o crescimento logarítmico por "unidade de tempo"
 # Como estás a usar intervalos mensais:
 growth_rate = np.exp(coef_log[0]) - 1
 cagr = (1 + growth_rate)**12 - 1  # anualizado
-
+# %%
 print(f"Crescimento médio mensal: {growth_rate * 100:.2f}%")
 print(f"Crescimento médio anual (CAGR): {cagr * 100:.2f}%")
-
+# %%
 # MÉTODO TESTE
-#monthly_investment = 30000/len(y)
-monthly_investment = 500
+Monthly_investment = 10
 total_invest = np.zeros(len(y))
-total_invest[0] = monthly_investment
+total_invest[0] = Monthly_investment
 for i in range(1, len(total_invest)):
-    total_invest[i] = total_invest[i-1] + monthly_investment
-total_invest
+    total_invest[i] = total_invest[i-1] + Monthly_investment
 
 
 sp500_price = y / 10
 
-stocks_owned = monthly_investment / sp500_price # Quantas ações consigo comprar com 500 euros
+stocks_owned = Monthly_investment / sp500_price # Quantas ações consigo comprar com 500 euros
 for i in range(len(stocks_owned)-1):
     stocks_owned[i+1] += stocks_owned[i] # Tornar a função acumulativa
 
@@ -174,34 +149,28 @@ porfolio = stocks_owned * sp500_price # Calcular evolução portfolio
 
 # %%
 # Método de weighted buy
-allocation = (monthly_investment * (1 - 2.5 * diference/100)) # dinheiro investido mês a mês
+allocation = (Monthly_investment * (1 - 2.5 * diference/100)) # dinheiro investido mês a mês
 total_allocation = np.zeros(len(allocation))
 for i in range(len(allocation)):
     if allocation[i] < 0:
         allocation[i] = 0 # Não retirar dinheiro para não pagar impostos
-    if allocation[i] > 2*monthly_investment:
-        allocation[i] = 2*monthly_investment # Não retirar dinheiro para não pagar impostos
+    if allocation[i] > 2*Monthly_investment:
+        allocation[i] = 2*Monthly_investment # Não retirar dinheiro para não pagar impostos
     total_allocation[i] = sum(allocation[:i+1])
 
-total_allocation 
-
-#allocation
 
 stocks_owned2 = allocation / sp500_price
-#stocks_owned2
 
 for i in range(len(stocks_owned2)-1):
     stocks_owned2[i+1] += stocks_owned2[i]
-#stocks_owned2
-porfolio2 = stocks_owned2 * sp500_price
-porfolio2
 
+porfolio2 = stocks_owned2 * sp500_price
+# %%
 print(f"Totalidade de dinheiro alocado em Standart Investment: {total_invest[-1]}.")
 print(f"Totalidade de carteira de investimento em Standart Investment: {porfolio[-1]}.")
-
 print(f"Totalidade de dinheiro alocado: {total_allocation[-1]}.")
 print(f"Totalidade de carteira de investimento: {porfolio2[-1]}.")
-
+# %%
 plt.figure(figsize=(12, 6))
 plt.plot(sp500_data['Date'], porfolio, label='Standart Investment', linestyle='solid', color='red')
 plt.plot(sp500_data['Date'], porfolio2, label="Maltez's way", linestyle='dotted', color='blue')
@@ -212,35 +181,39 @@ plt.plot(sp500_data['Date'], total_invest, label='Standart Investment (Allocatio
 plt.plot(sp500_data['Date'], total_allocation, label="Maltez's way (Allocation)", linestyle='dotted', color='blue')
 plt.title("Allocation", fontsize=20)
 improve_draw()
-
+# %%
 # Ver se a função Diference tem média 0 num espaço grande de tempo
 print(f"Média do gráfico diference: {np.mean(diference)}%")
-
-
-
 # %%
-# Vamos fazer com dados até 2023 estudar 
-sp500_data_since2017 = sp500_data[(sp500_data['Date'] <= '2025-12-31') & (sp500_data['Date'] >= '2017-01-01')]
-days_year = len(sp500_data_since2017)
-sp500_data_since2017['Close'].values[0][0]
+year = 2000
+# Vamos fazer com dados até x estudar 
+sp500_data_since_a_year = sp500_data[(sp500_data['Date'] <= '2025-12-31') & (sp500_data['Date'] >= f'{year}-01-01')]
+days_year = len(sp500_data_since_a_year)
+sp500_data_since_a_year['Close'].values[0][0]
 
-# %%
 # Obter as datas reais
-datas = sp500_data_since2017['Date'].reset_index(drop=True)
+datas = sp500_data_since_a_year['Date'].reset_index(drop=True)
 time = len(datas)
 
 
 # Parâmetros
-preco_inicial = sp500_data_since2017['Close'].values[0]
-sigma = 0.045
+preco_inicial = sp500_data_since_a_year['Close'].values[0]
+
+# Retornos logarítmicos mensais
+log_returns = np.log(sp500_data['Close'] / sp500_data['Close'].shift(1)).dropna()
+
+# Desvio padrão mensal
+sigma = log_returns.std()
+
 mu = np.log(1 + cagr) / 12
-simulacoes = 10000
+simulacoes = 100
 
 
 # Matriz de preços
 precos = np.zeros((time, simulacoes))
 precos[0] = preco_inicial
 
+# %%
 # Correção da simulação
 for s in range(simulacoes):
     for t in range(1, time):
@@ -252,8 +225,7 @@ for s in range(simulacoes):
 
 # Converter em DataFrame com índice de datas
 precos_df = pd.DataFrame(precos, index=datas)
-precos_df
-
+# %%
 ##########################
 # CHATGPT
 # Colocar y_pred em 2024 até 2025
@@ -261,7 +233,7 @@ precos_df
 sp500_data['Date'] = pd.to_datetime(sp500_data['Date'])
 
 # Filtra os dados com date > 01/01/2024
-mask = sp500_data['Date'] > pd.Timestamp('2016-12-31')
+mask = sp500_data['Date'] > pd.Timestamp(f'{year-1}-12-31')
 dates_filtered = sp500_data.loc[mask, 'Date']
 y_pred_filtered = y_pred[mask.values]  # y_pred deve ter mesmo comprimento que sp500_data
 
@@ -281,23 +253,13 @@ plt.show()
 
 # %%
 # MÉTODO TESTE
-# monthly investment
-#monthly_investment =  45000 / len(y_pred_filtered)
-monthly_investment = 500
-monthly_investment
-# %%
-total_invest = np.zeros(len(precos_df))
-total_invest[0] = monthly_investment
-for i in range(1, len(total_invest)):
-    total_invest[i] = total_invest[i-1] + monthly_investment
-total_invest
 
-# %%
-precos_df
-# %%
+total_invest = np.zeros(len(precos_df))
+total_invest[0] = Monthly_investment
+for i in range(1, len(total_invest)):
+    total_invest[i] = total_invest[i-1] + Monthly_investment
+
 sp500_price_monte = precos_df / 10
-sp500_price_monte
-# %%
 ######################## Chat GPT
 # Inicializar o array para guardar a evolução de ações compradas por simulação
 stocks_owned_matrix = np.zeros_like(sp500_price_monte)
@@ -306,65 +268,43 @@ stocks_owned_matrix = np.zeros_like(sp500_price_monte)
 for i in range(sp500_price_monte.shape[1]):
     prices = sp500_price_monte.iloc[:, i].values  # preços da simulação i
     stocks = np.zeros_like(prices)
-    stocks[0] = monthly_investment / prices[0]
+    stocks[0] = Monthly_investment / prices[0]
     
     for t in range(1, len(prices)):
-        stocks[t] = stocks[t-1] + (monthly_investment / prices[t])
+        stocks[t] = stocks[t-1] + (Monthly_investment / prices[t])
     
     stocks_owned_matrix[:, i] = stocks  # guardar resultado
 #######################
 # %%
 pd.DataFrame(stocks_owned_matrix)
-# %%
 porfolio = stocks_owned_matrix * sp500_price_monte # Calcular evolução portfolio
 pd.DataFrame(porfolio)
 
-# %%
-len(y_pred_filtered)
-# %%
-precos_df
-# %%
-#diference = (precos_df - y_pred_filtered) / y_pred_filtered, 
-# mas temos de por y_pred do mesmo tamanho do dataset
 diference = 100 * (precos_df - y_pred_filtered[:, np.newaxis]) / y_pred_filtered[:, np.newaxis] # Em percentagem
-diference
-# %%
+
+
 # Método de weighted buy
-allocation = (monthly_investment * (1 - 2.5 * diference/100)) # dinheiro investido mês a 
-allocation
-# %%
-#total_allocation = np.zeros_like(allocation)
+allocation = (Monthly_investment * (1 - 2.5 * diference/100)) # dinheiro investido mês a 
 
 allocation = np.where(allocation < 0, 0, allocation)
 total_allocation = np.cumsum(allocation, axis=0)
-# %%
+
 pd.DataFrame(allocation)
-# %%
 pd.DataFrame(total_allocation) 
 
-# %%
-sp500_price_monte
-# %%
 stocks_owned2 = allocation / sp500_price_monte
-stocks_owned2
-# %%
+
 stocks_owned2 = np.cumsum(stocks_owned2, axis=0)
-stocks_owned2
-# %%
+
 porfolio2 = stocks_owned2 * sp500_price_monte
-porfolio2
-# %%
 
 # Supondo que 'porfolio2' é o teu DataFrame com datas como índice e simulações nas colunas
 final_values2 = porfolio2.iloc[-1]  # pega os valores da última data
 final_values1 = porfolio.iloc[-1]
-# %%
-final_values1
-# %% 
-final_values2
+
 # %%
 # Define a largura dos bins
-bin_width = 5000
+bin_width = final_values2.max()/100
 
 # Define os limites globais
 min_val = min(final_values1.min(), final_values2.min())
@@ -409,21 +349,17 @@ plt.grid(True)
 plt.show()
 
 final_values2_0 = np.array(final_values2)
-final_values2_0
 
 roi_maltez = 100*(final_values2 - final_allocation)/final_allocation
 
-monthly_investment_array = np.ones(len(final_values1)) * monthly_investment
-monthly_investment_array
+monthly_investment_array = np.ones(len(final_values1)) * Monthly_investment
 
 roi_standart = 100*(final_values1 - total_invest[-1])/total_invest[-1]
-
-
 # %%
 # %%
 
 # Define a largura dos bins
-bin_width = 10
+bin_width = roi_maltez.max()/50
 
 # Define os limites globais
 min_val = min(roi_standart.min(), roi_maltez.min())
