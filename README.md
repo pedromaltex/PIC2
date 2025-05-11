@@ -1,89 +1,81 @@
 # PIC
 My Graduation assignment
 
-# LSTM Model for S&P 500 Price Prediction
+# S\&P 500 Investment Strategy Simulator
 
-This repository contains a Long Short-Term Memory (LSTM) neural network model for predicting the next day's closing price of the S&P 500 index using historical data.
+This project is a backtesting framework designed to analyze dynamic investment strategies based on historical data of the S\&P 500. The goal is to identify whether certain market conditions (e.g., undervaluation or overvaluation based on exponential moving averages) offer better opportunities for investing capital compared to traditional Buy & Hold strategies.
 
+## 🚀 Features
 
-## Overview
+* 📈 Historical simulation of the S\&P 500 using monthly investment contributions
+* 🧠 Allocation strategies based on percentiles and valuation indicators
+* 🔄 Dynamic rebalancing based on perceived market valuation
+* 🎯 Monte Carlo simulations to evaluate strategy robustness
+* 📊 Visualization of strategy performance and statistical distribution
+* 🔍 Comparison of filtered strategies (e.g., only top 25%-75% performers)
 
-The model is built using TensorFlow/Keras and leverages historical closing prices from the S&P 500 index to forecast future prices. It involves the following steps:
+## 📂 Project Structure
 
-1. **Data Collection**: Historical data is fetched using the `yfinance` library.
-2. **Data Preprocessing**: The data is normalized and structured into sequences suitable for LSTM input.
-3. **Model Training**: An LSTM model is trained on the preprocessed data.
-4. **Evaluation**: The model's predictions are compared to actual prices to assess performance.
+```
+.
+├── data/                  # Contains historical price data (e.g., from yfinance)
+├── analysis/              # Core simulation scripts and strategy logic
+├── plots/                 # Generated visualizations
+├── venv/                  # Python virtual environment (optional)
+├── main.py                # Main execution file
+├── utils.py               # Helper functions for plotting, EMA calculations, etc.
+└── README.md
+```
 
-## Prerequisites
+## ⚙️ Installation
 
-- Python 3.7+
-- TensorFlow
-- Keras
-- Pandas
-- NumPy
-- `yfinance`
-- Scikit-learn
+1. Clone the repository:
 
-## Installation
+```
+git clone https://github.com/yourusername/sp500-investment-simulator.git
+cd sp500-investment-simulator
+```
 
-To get started, clone this repository and install the required dependencies:
+2. (Optional) Create a virtual environment:
 
-```bash
-git clone https://github.com/your-username/lstm-sp500-prediction.git
-cd lstm-sp500-prediction
+```
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install the required packages:
+
+```
 pip install -r requirements.txt
 ```
 
-## Usage
+## 📊 How to Use
 
-1. **Run the Script**
+Make sure your data is stored in a format where each column represents a simulation and each row is a date/index.
 
-   Execute the main script to train the LSTM model and generate predictions:
+Then run the core simulation:
 
-   ```bash
-   python lstm_sp500.py
-   ```
+```
+python main.py
+```
 
-2. **Customization**
+Or use the notebook directly:
 
-   - Modify the `start` and `end` dates in the `yfinance` data fetch section to change the time frame of the historical data.
-   - Adjust hyperparameters such as `time_step`, `batch_size`, and `epochs` to optimize model performance.
+```python
+from analysis.simulation import run_simulation
+run_simulation()
+```
 
-## Model Structure
+## 📈 Strategy Overview
 
-The LSTM model is structured as follows:
+The strategy evaluates whether the S\&P 500 is currently undervalued or overvalued by comparing the current price to an exponential moving average (EMA). Based on this, it allocates capital dynamically:
 
-- Two LSTM layers with 50 units each.
-- A final Dense layer for the output.
-- Adam optimizer and Mean Squared Error (MSE) loss function.
+* 🟢 Undervalued → Invest more
+* 🔴 Overvalued → Invest less
 
-## Evaluation
+These strategies are tested across thousands of simulated investment periods using different market start times and durations.
 
-The model's performance is evaluated by comparing predicted prices against actual prices from the test dataset. Key metrics like Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE) can be calculated for further insights.
+## 🧪 Percentile Filtering
 
-## Results
+At the end of each simulation, the final portfolio value is used to compute performance percentiles. Simulations within the interquartile range (25th to 75th percentile) are filtered and plotted to analyze the core performance of the strategy, reducing the influence of outliers and extreme scenarios.
 
-Sample predictions vs. actual values:
-
-| Date       | Predicted Price | Actual Price |
-|------------|-----------------|--------------|
-| 2025-01-02 | 4700.12         | 4720.34      |
-| 2025-01-03 | 4715.23         | 4735.56      |
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
-
-## License
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.
-
-## Acknowledgements
-
-- [Yahoo Finance](https://finance.yahoo.com/) for providing historical data.
-- TensorFlow and Keras teams for the deep learning framework.
-
----
-
-Feel free to explore, modify, and use this project as a starting point for your own financial predictions and machine learning projects.
