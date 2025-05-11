@@ -8,9 +8,9 @@ from plotter import plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, plot
 ####################################
 # Objetivo: Regressão linear SP500 #
 ####################################
-Monthly_investment = 10
+Monthly_investment = 500
 Year = 2008
-simulacoes = 100000
+simulacoes = 10000
 
 
 # Função para obter os dados históricos do S&P 500
@@ -148,26 +148,52 @@ time = len(datas)
 # %%
 # Parâmetros
 preco_inicial = sp500_data_since_a_year['Close'].values[0]
+
 # Retornos logarítmicos mensais
 log_returns = np.log(sp500_data['Close'] / sp500_data['Close'].shift(1)).dropna()
+
 # Desvio padrão mensal
-sigma = log_returns.std()
+sigma = log_returns.std() 
 mu = np.log(1 + cagr) / 12
+mu = log_returns.mean().iloc[0]
+
+# %% 
 # Matriz de preços
 precos = np.zeros((time, simulacoes))
 precos[0] = preco_inicial
 
-# Correção da simulação
-for s in range(simulacoes):
-    for t in range(1, time):
-        epsilon = np.random.normal()
-        drift = (mu - 0.5 * sigma**2)
-        diffusion = sigma * epsilon
-        precos[t, s] = precos[t - 1, s] * np.exp(drift + diffusion)
+# %%
+########################################################################
+################# FORMA EFICIENTE CHATGPT ##############################
+########################################################################
 
+# Log returns
+log_returns = np.log(sp500_data['Close'] / sp500_data['Close'].shift(1)).dropna()
 
+# Se for DataFrame por engano:
+if isinstance(log_returns, pd.DataFrame):
+    log_returns = log_returns.iloc[:, 0]  # pega a coluna certa
+
+# Corrigir sigma para tipo float
+sigma = float(log_returns.std())
+
+# Drift e simulação vetorizada
+rand_norm = np.random.normal(size=(time - 1, simulacoes))
+drift = mu - 0.5 * sigma**2
+steps = np.exp(drift + sigma * rand_norm)
+
+# Preencher a matriz de preços
+precos = np.zeros((time, simulacoes))
+precos[0] = preco_inicial
+precos[1:, :] = preco_inicial * steps.cumprod(axis=0)
+
+########################################################################
+########################################################################
+########################################################################
 # Converter em DataFrame com índice de datas
 precos_df = pd.DataFrame(precos, index=datas)
+sigma, drift
+
 # %%
 ##########################
 # CHATGPT
@@ -183,78 +209,95 @@ y_pred_filtered = y_pred[mask.values]  # y_pred deve ter mesmo comprimento que s
 ############################
 plot7(precos_df, dates_filtered, y_pred_filtered)
 
+# %% método para usar apenas do percentil 10 a 90 dos resultados.
+# Obter os preços finais de cada simulação (última linha de cada coluna)
+final_prices = precos_df.iloc[-1, :]
+
+# Calcular os percentis 25 e 75 dos preços finais
+perc = 20
+percentil_25 = np.percentile(final_prices, perc)
+percentil_75 = np.percentile(final_prices, 100 - perc)
+
+# Filtrar as simulações que estão entre os percentis 25 e 75
+filtered_precos_df = precos_df.loc[:, (final_prices >= percentil_25) & (final_prices <= percentil_75)]
+
+filtered_precos_df
+
+
+plot7(filtered_precos_df, dates_filtered, y_pred_filtered)
+
+dataframes = [precos_df, filtered_precos_df]
+
 # %%
 # MÉTODO TESTE
+for dt in dataframes:
+    total_invest = np.zeros(len(dt))
+    total_invest[0] = Monthly_investment
+    for i in range(1, len(total_invest)):
+        total_invest[i] = total_invest[i-1] + Monthly_investment
 
-total_invest = np.zeros(len(precos_df))
-total_invest[0] = Monthly_investment
-for i in range(1, len(total_invest)):
-    total_invest[i] = total_invest[i-1] + Monthly_investment
+    sp500_price_monte = dt / 10
 
-sp500_price_monte = precos_df / 10
+    ######################## Chat GPT
+    # Inicializar o array para guardar a evolução de ações compradas por simulação
+    stocks_owned_matrix = np.zeros_like(sp500_price_monte)
 
-######################## Chat GPT
-# Inicializar o array para guardar a evolução de ações compradas por simulação
-stocks_owned_matrix = np.zeros_like(sp500_price_monte)
+    # Iterar por cada simulação (coluna)
+    stocks_owned_matrix = np.cumsum(Monthly_investment / sp500_price_monte.values, axis=0)
 
-# Iterar por cada simulação (coluna)
-stocks_owned_matrix = np.cumsum(Monthly_investment / sp500_price_monte.values, axis=0)
+    #######################
+    pd.DataFrame(stocks_owned_matrix)
+    porfolio = stocks_owned_matrix * sp500_price_monte # Calcular evolução portfolio
+    pd.DataFrame(porfolio)
 
-#######################
-# %%
-pd.DataFrame(stocks_owned_matrix)
-porfolio = stocks_owned_matrix * sp500_price_monte # Calcular evolução portfolio
-pd.DataFrame(porfolio)
-
-diference = 100 * (precos_df - y_pred_filtered[:, np.newaxis]) / y_pred_filtered[:, np.newaxis] # Em percentagem
-
-
-# Método de weighted buy
-allocation = (Monthly_investment * (1 - 2.5 * diference/100)) # dinheiro investido mês a 
-
-allocation = np.where(allocation < Monthly_investment*0.1, Monthly_investment*0.1, allocation)
-total_allocation = np.cumsum(allocation, axis=0)
-
-pd.DataFrame(allocation)
-pd.DataFrame(total_allocation) 
-
-stocks_owned2 = allocation / sp500_price_monte
-
-stocks_owned2 = np.cumsum(stocks_owned2, axis=0)
-
-porfolio2 = stocks_owned2 * sp500_price_monte
-
-# Supondo que 'porfolio2' é o teu DataFrame com datas como índice e simulações nas colunas
-final_values2 = porfolio2.iloc[-1]  # pega os valores da última data
-final_values1 = porfolio.iloc[-1]
-
-plot8(final_values1, final_values2)
+    diference = 100 * (dt - y_pred_filtered[:, np.newaxis]) / y_pred_filtered[:, np.newaxis] # Em percentagem
 
 
-# %%
-final_allocation = total_allocation[-1, :]  # última linha (últimos valores de cada simulação)
+    # Método de weighted buy
+    allocation = (Monthly_investment * (1 - 2.5 * diference/100)) # dinheiro investido mês a 
 
-plot9(total_allocation, final_allocation)
+    allocation = np.clip(allocation, Monthly_investment * 0.1, Monthly_investment * 2)
+    total_allocation = np.cumsum(allocation, axis=0)
 
-final_values2_0 = np.array(final_values2)
+    pd.DataFrame(allocation)
+    pd.DataFrame(total_allocation) 
 
-roi_maltez = 100*(final_values2 - final_allocation)/final_allocation
+    stocks_owned2 = allocation / sp500_price_monte
 
-monthly_investment_array = np.ones(len(final_values1)) * Monthly_investment
+    stocks_owned2 = np.cumsum(stocks_owned2, axis=0)
 
-roi_standart = 100*(final_values1 - total_invest[-1])/total_invest[-1]
+    porfolio2 = stocks_owned2 * sp500_price_monte
 
-# Define a largura dos bins
-bin_width = roi_maltez.max()/50
+    # Supondo que 'porfolio2' é o teu DataFrame com datas como índice e simulações nas colunas
+    final_values2 = porfolio2.iloc[-1]  # pega os valores da última data
+    final_values1 = porfolio.iloc[-1]
 
-# Define os limites globais
-min_val = min(roi_standart.min(), roi_maltez.min())
-max_val = max(roi_standart.max(), roi_maltez.max())
+    plot8(final_values1, final_values2)
 
-# Gera os bins com mesma largura
-bins = np.arange(np.floor(min_val), np.ceil(max_val) + bin_width, bin_width)
 
-plot10(roi_standart, roi_maltez, bins)
+    final_allocation = total_allocation.iloc[-1, :]  # última linha (últimos valores de cada simulação)
+
+    plot9(total_allocation, final_allocation)
+
+    final_values2_0 = np.array(final_values2)
+
+    roi_maltez = 100*(final_values2 - final_allocation)/final_allocation
+
+    monthly_investment_array = np.ones(len(final_values1)) * Monthly_investment
+
+    roi_standart = 100*(final_values1 - total_invest[-1])/total_invest[-1]
+
+    # Define a largura dos bins
+    bin_width = roi_maltez.max()/50
+
+    # Define os limites globais
+    min_val = min(roi_standart.min(), roi_maltez.min())
+    max_val = max(roi_standart.max(), roi_maltez.max())
+
+    # Gera os bins com mesma largura
+    bins = np.arange(np.floor(min_val), np.ceil(max_val) + bin_width, bin_width)
+
+    plot10(roi_standart, roi_maltez, bins)
 
 # %%
 
