@@ -1,7 +1,9 @@
 # PIC
 My Graduation assignment
 
-# S\&P 500 Investment Strategy Simulator
+## Investment Strategy Analysis based on S\&P 500 Historical Data
+
+## Overview
 
 This project is a backtesting framework designed to analyze dynamic investment strategies based on historical data of the S\&P 500. The goal is to identify whether certain market conditions (e.g., undervaluation or overvaluation based on exponential moving averages) offer better opportunities for investing capital compared to traditional Buy & Hold strategies.
 
@@ -78,4 +80,13 @@ These strategies are tested across thousands of simulated investment periods usi
 ## 🧪 Percentile Filtering
 
 At the end of each simulation, the final portfolio value is used to compute performance percentiles. Simulations within the interquartile range (25th to 75th percentile) are filtered and plotted to analyze the core performance of the strategy, reducing the influence of outliers and extreme scenarios.
+
+## License
+
+This project is open-source under the MIT License.
+
+---
+
+Let me know if you'd like to publish this to GitHub with a project description and setup guide!
+
 
