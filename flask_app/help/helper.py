@@ -9,15 +9,14 @@ from plotter import plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, plot
 ####################################
 Monthly_investment = 500
 simulacoes = 10000
-Future_Years = 2
+Future_Years = 5
 
 def future_brownian(sigma, avg_expo, stock_data, years):
 
     last_price = float(stock_data['Close'].iloc[-1])
 
     expected_return = (avg_expo[-1] / last_price)**(1/(12*years))
-    expected_return = (expected_return - 1)
-    mu = np.log(1 + expected_return)  # anualizado
+    mu = np.log(expected_return)  # anualizado
 
     # Data final dos teus dados reais
     last_date = stock_data['Date'].max()

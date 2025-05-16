@@ -152,7 +152,7 @@ preco_inicial = sp500_data_since_a_year['Close'].values[0]
 log_returns = np.log(sp500_data['Close'] / sp500_data['Close'].shift(1)).dropna()
 
 # Desvio padrão mensal
-sigma = log_returns.std() 
+sigma = log_returns.std()
 mu = np.log(1 + cagr) / 12
 mu = log_returns.mean().iloc[0]
 
@@ -174,7 +174,7 @@ if isinstance(log_returns, pd.DataFrame):
     log_returns = log_returns.iloc[:, 0]  # pega a coluna certa
 
 # Corrigir sigma para tipo float
-sigma = float(log_returns.std())
+sigma = float(log_returns.std()) 
 
 #############################################################
 # 17/05/2025
@@ -200,7 +200,7 @@ plot7(precos_df, future_dates, y_pred_future)
 final_prices = precos_df.iloc[-1, :]
 
 # Calcular os percentis 25 e 75 dos preços finais
-perc = 20
+perc = 25
 percentil_25 = np.percentile(final_prices, perc)
 percentil_75 = np.percentile(final_prices, 100 - perc)
 
