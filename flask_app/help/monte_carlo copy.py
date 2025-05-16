@@ -9,8 +9,8 @@ from helper import future_brownian
 # Objetivo: Regressão linear SP500 #
 ####################################
 Monthly_investment = 500
-Year = 2008
-simulacoes = 1000
+Year = 2000
+simulacoes = 10000
 Future_Years = 5
 
 
@@ -32,6 +32,7 @@ except:
     name = yf.Ticker(name).info['longName']
 
 sp500_data = sp500_data[['Close']].reset_index()
+sp500_data = sp500_data[(sp500_data['Date'] <= f'{Year}-12-31')]
 
 # Criar um vetor de anos com base no número de dados
 unit_of_time = np.arange(len(sp500_data))
@@ -101,12 +102,9 @@ print(f"Crescimento médio anual (CAGR): {cagr * 100:.2f}%")
 # MÉTODO TESTE
 total_invest = Monthly_investment * (np.arange(len(y)) + 1)
 
-
 sp500_price = y / 10
 
 stocks_owned = np.cumsum(Monthly_investment / sp500_price)
-
-
 
 porfolio = stocks_owned * sp500_price # Calcular evolução portfolio
 
@@ -114,7 +112,7 @@ porfolio = stocks_owned * sp500_price # Calcular evolução portfolio
 # Método de weighted buy
 allocation = (Monthly_investment * (1 - 2.5 * diference/100)) # dinheiro investido mês a mês
 total_allocation = np.zeros(len(allocation))
-allocation = np.clip(allocation, Monthly_investment * 0.1, Monthly_investment * 2)
+allocation = np.clip(allocation, Monthly_investment * 0.5, Monthly_investment * 1.5)
 total_allocation = np.cumsum(allocation)
 
 
@@ -178,38 +176,25 @@ if isinstance(log_returns, pd.DataFrame):
 # Corrigir sigma para tipo float
 sigma = float(log_returns.std())
 
-# Drift e simulação vetorizada
-rand_norm = np.random.normal(size=(time - 1, simulacoes))
-drift = mu - 0.5 * sigma**2
-steps = np.exp(drift + sigma * rand_norm)
+#############################################################
+# 17/05/2025
+# Número de meses futuros a prever
+meses_futuros = Future_Years * 12
 
-# Preencher a matriz de preços
-precos = np.zeros((time, simulacoes))
-precos[0] = preco_inicial
-precos[1:, :] = preco_inicial * steps.cumprod(axis=0)
+# Estender o vetor x para o futuro
+x_future = np.arange(len(sp500_data), len(sp500_data) + meses_futuros)
 
-########################################################################
-########################################################################
-########################################################################
-# Converter em DataFrame com índice de datas
-precos_df = pd.DataFrame(precos, index=datas)
-sigma, drift
+# Prever o log do S&P 500 com base nos coeficientes
+y_pred_log_future = np.polyval(coef_log, x_future)
 
-# %%
-##########################
-# CHATGPT
-# Colocar y_pred em 2024 até 2025
-# Garante que a coluna 'Date' é datetime
-sp500_data['Date'] = pd.to_datetime(sp500_data['Date'])
+# Aplicar exponencial para converter de log-voltar para escala original
+y_pred_future = np.exp(y_pred_log_future)
 
-# Filtra os dados com date > 01/01/2024
-mask = sp500_data['Date'] > pd.Timestamp(f'{year-1}-12-31')
-dates_filtered = sp500_data.loc[mask, 'Date']
-y_pred_filtered = y_pred[mask.values]  # y_pred deve ter mesmo comprimento que sp500_data
+precos_df, future_dates = future_brownian(sigma, y_pred_future, sp500_data, Future_Years) # precos_df
 
-############################
-plot7(precos_df, dates_filtered, y_pred_filtered)
+plot7(precos_df, future_dates, y_pred_future)
 
+##########################################################
 # %% método para usar apenas do percentil 10 a 90 dos resultados.
 # Obter os preços finais de cada simulação (última linha de cada coluna)
 final_prices = precos_df.iloc[-1, :]
@@ -225,10 +210,10 @@ filtered_precos_df = precos_df.loc[:, (final_prices >= percentil_25) & (final_pr
 filtered_precos_df
 
 
-plot7(filtered_precos_df, dates_filtered, y_pred_filtered)
+plot7(filtered_precos_df, future_dates, y_pred_future)
 
 dataframes = [precos_df, filtered_precos_df]
-
+filtered_precos_df
 # %%
 # MÉTODO TESTE
 for dt in dataframes:
@@ -251,7 +236,7 @@ for dt in dataframes:
     porfolio = stocks_owned_matrix * sp500_price_monte # Calcular evolução portfolio
     pd.DataFrame(porfolio)
 
-    diference = 100 * (dt - y_pred_filtered[:, np.newaxis]) / y_pred_filtered[:, np.newaxis] # Em percentagem
+    diference = 100 * (dt - y_pred_future[:, np.newaxis]) / y_pred_future[:, np.newaxis] # Em percentagem
 
 
     # Método de weighted buy

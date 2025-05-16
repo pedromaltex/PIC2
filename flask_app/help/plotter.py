@@ -67,14 +67,14 @@ def plot4(x, y, name):
 def plot5(x, y1, y2):
     plt.figure(figsize=(12, 6))
     plt.plot(x, y1, label='Standart Investment', linestyle='solid', color='red')
-    plt.plot(x, y2, label="Maltez's way", linestyle='dotted', color='blue')
-    plt.title("Standart Investment vs Maltez's way", fontsize=20)
+    plt.plot(x, y2, label="Weighted Investment", linestyle='dotted', color='blue')
+    plt.title("Standart Investment vs Weighted Investment", fontsize=20)
     improve_draw()
 
 def plot6(x, y1, y2):
     plt.figure(figsize=(12, 6))
     plt.plot(x, y1, label='Standart Investment (Allocation)', linestyle='solid', color='red')
-    plt.plot(x, y2, label="Maltez's way (Allocation)", linestyle='dotted', color='blue')
+    plt.plot(x, y2, label="Weighted Investment (Allocation)", linestyle='dotted', color='blue')
     plt.title("Allocation", fontsize=20)
     improve_draw()
 
@@ -107,11 +107,11 @@ def plot8(f1, f2):
     plt.hist(f1, bins=bins, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
 
     # Histograma do segundo portfólio
-    plt.hist(f2, bins=bins, edgecolor='black', color='red', alpha=0.5, label="Maltez's way")
+    plt.hist(f2, bins=bins, edgecolor='black', color='red', alpha=0.5, label="Weighted Investment")
 
     # Plot mean lines
     plt.axvline(np.mean(f1), color='blue', linestyle='dashed', linewidth=2, label=f'Mean Buy & Hold: {np.mean(f1):.2f}')
-    plt.axvline(np.mean(f2), color='darkred', linestyle='dashed', linewidth=2, label=f"Mean Maltez's way: {np.mean(f2):.2f}")
+    plt.axvline(np.mean(f2), color='darkred', linestyle='dashed', linewidth=2, label=f"Mean Weighted Investment: {np.mean(f2):.2f}")
 
     plt.title('Final values of portfolio (distribution)', fontsize=15)
     plt.xlabel('Value of portfolio (€)')
@@ -126,7 +126,7 @@ def plot9(tot_alloc, fin_alloc):
 
     plt.hist(fin_alloc, bins=30, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
 
-    plt.title('Total allocation in Maltez way', fontsize=15)
+    plt.title('Total allocation in Weighted Investment', fontsize=15)
     plt.xlabel('Final allocation (€)')
     plt.ylabel('Frequency')
     plt.legend()
@@ -138,11 +138,11 @@ def plot10(h1, h2, bins):
     # Histograma do primeiro portfólio
     plt.hist(h1, bins=bins, edgecolor='black', color='skyblue', alpha=1, label='Buy and Hold')
     # Histograma do segundo portfólio
-    plt.hist(h2, bins=bins, edgecolor='black', color='red', alpha=0.5, label="Maltez's way")
+    plt.hist(h2, bins=bins, edgecolor='black', color='red', alpha=0.5, label="Weighted Investment")
 
     # Plot mean lines
     plt.axvline(np.mean(h1), color='blue', linestyle='dashed', linewidth=2, label=f'Mean Buy & Hold: {np.mean(h1):.2f}%')
-    plt.axvline(np.mean(h2), color='darkred', linestyle='dashed', linewidth=2, label=f"Mean Maltez's way: {np.mean(h2):.2f}%")
+    plt.axvline(np.mean(h2), color='darkred', linestyle='dashed', linewidth=2, label=f"Mean Weighted Investment: {np.mean(h2):.2f}%")
 
     plt.title('ROI (Return over investment)', fontsize=15)
     plt.xlabel('ROI (Return over investment) (%)')
